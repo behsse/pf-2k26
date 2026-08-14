@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { Navbar } from "./components/Navbar";
+import { CustomScrollbar } from "./components/CustomScrollbar";
+import { Loader } from "./components/Loader";
+import { PageTransitionOverlay } from "./components/PageTransitionOverlay";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,9 +30,20 @@ export default function RootLayout({
   return (
     <html
       lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
-      <body className="min-h-full flex flex-col p-8">
+      <body className="flex min-h-dvh flex-col">
+        <Script id="disable-scroll-restoration" strategy="beforeInteractive">
+          {`
+            if ('scrollRestoration' in history) {
+              history.scrollRestoration = 'manual';
+            }
+            window.scrollTo(0, 0);
+          `}
+        </Script>
+        <Loader />
+        <PageTransitionOverlay />
         <Navbar />
-        {children}
+        <CustomScrollbar />
+        <main className="flex flex-1 flex-col">{children}</main>
       </body>
     </html>
   );

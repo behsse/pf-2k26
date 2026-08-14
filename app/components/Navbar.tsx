@@ -5,17 +5,76 @@ import type { RefObject } from "react"
 import gsap from "gsap"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { LogoMark } from "./LogoMark"
+import { NavFluidMask } from "./NavFluidMask"
+import { TransitionLink } from "./TransitionLink"
 
-const menuLinks = [
-  { href: "/", label: "Home", image: "/home.webp" },
-  { href: "/work", label: "Work", image: "/works.webp" },
-  { href: "/service", label: "Services", image: "/service.webp" },
-  { href: "/faq", label: "FAQ", image: "/faq.webp" },
-  { href: "/about", label: "About", image: "/about.webp" },
-  { href: "/contact", label: "Contact", image: "/contact.webp" },
+const primaryLinks = [
+  { href: "/", label: "Home" },
+  { href: "/projets", label: "Projets" },
 ]
 
-const menuImages = [...new Set(menuLinks.map(({ image }) => image))]
+const secondaryLinks = [
+  { href: "/service", label: "Services" },
+  { href: "/faq", label: "FAQ" },
+  { href: "/about", label: "About" },
+  { href: "/contact", label: "Contact" },
+]
+
+/** lucide.dev "move-up-right" icon. */
+function MoveUpRightIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className={className}
+    >
+      <path d="M13 5H19V11" />
+      <path d="M19 5L5 19" />
+    </svg>
+  )
+}
+
+/** Contact/social link: the label sits above an identical duplicate, both
+ * clipped by a one-line-tall overflow-hidden mask. On hover the pair
+ * shifts up by exactly one line, so the duplicate rolls into view where
+ * the original was — never showing a partial line above or below — and
+ * settles back down when the pointer leaves. The arrow slides in the same
+ * beat, signaling "this leaves the page". */
+function ExternalLinkLabel({ label }: { label: string }) {
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      <span className="relative block h-lh overflow-hidden">
+        <span className="flex flex-col transition-transform duration-400 ease-out group-hover:-translate-y-1/2">
+          <span>{label}</span>
+          <span aria-hidden="true">{label}</span>
+        </span>
+      </span>
+      <MoveUpRightIcon className="h-3.5 w-3.5 translate-y-0.5 -translate-x-0.5 opacity-0 transition-all duration-300 ease-out group-hover:translate-y-0 group-hover:translate-x-0 group-hover:opacity-100" />
+    </span>
+  )
+}
+
+/** Same font-weight morph as the "relief" word in the hero, but hover-driven
+ * instead of auto-cycling: a hidden reference reserves the boldest weight's
+ * width so the live label morphing on top never shifts the layout. */
+function MorphOnHoverLabel({ label }: { label: string }) {
+  return (
+    <span className="relative inline-grid text-left">
+      <span aria-hidden="true" className="col-start-1 row-start-1 whitespace-nowrap font-black opacity-0">
+        {label}
+      </span>
+      <span className="col-start-1 row-start-1 whitespace-nowrap font-semibold transition-[font-weight] duration-500 ease-in-out group-hover:font-black">
+        {label}
+      </span>
+    </span>
+  )
+}
 
 const isActivePath = (pathname: string, href: string) =>
   href === "/"
@@ -26,6 +85,13 @@ export const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const backdropRef = useRef<HTMLButtonElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
+  const navRef = useRef<HTMLElement>(null)
+  const logoRef = useRef<HTMLElement>(null)
+  const menuButtonRef = useRef<HTMLElement>(null)
+  const menuTextRef = useRef<HTMLElement>(null)
+  const barRefs = useRef<Array<HTMLElement | null>>([])
+  const ctaButtonRef = useRef<HTMLElement>(null)
+  const ctaTextRef = useRef<HTMLElement>(null)
 
   useLayoutEffect(() => {
     const backdrop = backdropRef.current
@@ -91,40 +157,96 @@ export const Navbar = () => {
     }
   }, [closeMenu, isMenuOpen])
 
+  useLayoutEffect(() => {
+    window.dispatchEvent(new Event("site-header-color-refresh"))
+
+    // The hamburger bars rotate into/out of an "X" over a 300ms CSS
+    // transition independent of this effect — refreshing immediately bakes
+    // their mid-rotation (visually much wider) bounding box into the hover
+    // reveal canvas. Rebake once more after they've settled.
+    const settleTimeout = window.setTimeout(() => {
+      window.dispatchEvent(new Event("site-header-color-refresh"))
+    }, 320)
+
+    return () => window.clearTimeout(settleTimeout)
+  }, [isMenuOpen])
+
   return (
-    <header className="relative z-60">
-      <nav className="relative z-60 flex items-center justify-between">
+    <header
+      data-site-header
+      data-menu-open={isMenuOpen ? "true" : "false"}
+      className="site-header fixed inset-x-0 top-0 z-60 px-4 py-5 md:px-8 md:py-6"
+      style={{ color: "rgb(0, 0, 0)", "--header-contrast-color": "rgb(255, 255, 255)" } as React.CSSProperties}
+    >
+      <nav
+        ref={navRef}
+        className="relative z-60 flex items-center justify-between"
+        aria-label="Navigation principale"
+      >
         <div className="flex items-center gap-4">
-          <Link href="/" className="w-6">
-            <img src="logo.svg" alt="Logo behsse, représente un B et un E avec un style japonais" />
-          </Link>
+          <TransitionLink
+            ref={logoRef as React.Ref<HTMLAnchorElement>}
+            href="/"
+            label="Home"
+            className="block w-7 text-current md:w-9"
+            aria-label="Behsse — Accueil"
+          >
+            <LogoMark className="block h-auto w-full" />
+          </TransitionLink>
         </div>
         <div className="flex items-center gap-4">
-          <button type="button" className="flex cursor-pointer items-center gap-4 rounded-full border border-black bg-black px-6 py-2">
-            <p className="text-md font-medium text-white">Réserve un appel</p>
+          <button
+            ref={ctaButtonRef as React.Ref<HTMLButtonElement>}
+            type="button"
+            className="hidden cursor-pointer items-center gap-4 rounded-full border border-current bg-current px-5 py-2 md:px-6 sm:flex"
+          >
+            <span
+              ref={ctaTextRef as React.Ref<HTMLSpanElement>}
+              className="text-md font-medium text-[var(--header-contrast-color)]"
+            >
+              Réserve un appel
+            </span>
           </button>
           <button
+            ref={menuButtonRef as React.Ref<HTMLButtonElement>}
             type="button"
-            className="flex cursor-pointer items-center gap-4 rounded-full border border-black px-6 py-2"
+            className="flex cursor-pointer items-center gap-4 rounded-full border border-current bg-[var(--header-contrast-color)] px-5 py-2 text-current md:px-6"
             aria-controls="main-menu"
             aria-expanded={isMenuOpen}
             onClick={isMenuOpen ? closeMenu : openMenu}
           >
-            <p>Menu</p>
+            <p ref={menuTextRef as React.Ref<HTMLParagraphElement>}>Menu</p>
             <div className="flex flex-col gap-1" aria-hidden="true">
               <div
-                className={`h-0.5 w-4 origin-center rounded-full bg-black transition-transform duration-300 ${
+                ref={(element) => {
+                  barRefs.current[0] = element
+                }}
+                className={`h-0.5 w-4 origin-center rounded-full bg-current transition-transform duration-300 ${
                   isMenuOpen ? "translate-y-0.75 rotate-45" : ""
                 }`}
               />
               <div
-                className={`h-0.5 w-4 origin-center rounded-full bg-black transition-transform duration-300 ${
+                ref={(element) => {
+                  barRefs.current[1] = element
+                }}
+                className={`h-0.5 w-4 origin-center rounded-full bg-current transition-transform duration-300 ${
                   isMenuOpen ? "-translate-y-0.75 -rotate-45" : ""
                 }`}
               />
             </div>
           </button>
         </div>
+
+        <NavFluidMask
+          navRef={navRef}
+          logoRef={logoRef}
+          menuButtonRef={menuButtonRef}
+          menuTextRef={menuTextRef}
+          barRefs={barRefs}
+          ctaButtonRef={ctaButtonRef}
+          ctaTextRef={ctaTextRef}
+          isMenuOpen={isMenuOpen}
+        />
       </nav>
 
       <Menu
@@ -146,135 +268,6 @@ type MenuProps = {
 
 const Menu = ({ backdropRef, menuRef, isOpen, onClose }: MenuProps) => {
   const pathname = usePathname()
-  const [hoveredHref, setHoveredHref] = useState<string | null>(null)
-  const activeLink =
-    menuLinks.find(({ href }) => isActivePath(pathname, href)) ?? menuLinks[0]
-  const displayedImage =
-    menuLinks.find(({ href }) => href === hoveredHref)?.image ?? activeLink.image
-  const [initialImage] = useState(activeLink.image)
-  const currentImageRef = useRef(initialImage)
-  const incomingImageRef = useRef<string | null>(null)
-  const navigationImageRef = useRef<string | null>(null)
-  const imageRequestIdRef = useRef(0)
-  const imageZIndexRef = useRef(1)
-  const imageLayerRefs = useRef(new Map<string, HTMLDivElement>())
-  const imageElementRefs = useRef(new Map<string, HTMLImageElement>())
-  const imageTimelineRef = useRef<ReturnType<typeof gsap.timeline> | null>(null)
-
-  useLayoutEffect(() => {
-    for (const [image, layer] of imageLayerRefs.current) {
-      const isInitialImage = image === initialImage
-      gsap.set(layer, {
-        xPercent: isInitialImage ? 0 : -100,
-        visibility: isInitialImage ? "visible" : "hidden",
-        zIndex: isInitialImage ? 1 : 0,
-      })
-    }
-
-    return () => {
-      imageTimelineRef.current?.kill()
-    }
-  }, [initialImage])
-
-  const animateToImage = useCallback(async (targetImage: string) => {
-    const requestId = ++imageRequestIdRef.current
-
-    if (navigationImageRef.current) return
-
-    const currentImage = currentImageRef.current
-    const previousIncomingImage = incomingImageRef.current
-
-    if (targetImage === previousIncomingImage) return
-
-    imageTimelineRef.current?.kill()
-
-    if (previousIncomingImage) {
-      const previousIncomingLayer = imageLayerRefs.current.get(previousIncomingImage)
-
-      if (previousIncomingLayer) {
-        gsap.set(previousIncomingLayer, { xPercent: -100, visibility: "hidden" })
-      }
-
-      incomingImageRef.current = null
-    }
-
-    if (targetImage === currentImage) return
-
-    const currentLayer = imageLayerRefs.current.get(currentImage)
-    const incomingLayer = imageLayerRefs.current.get(targetImage)
-    const incomingImageElement = imageElementRefs.current.get(targetImage)
-
-    if (!currentLayer || !incomingLayer || !incomingImageElement) return
-
-    try {
-      await incomingImageElement.decode()
-    } catch {
-      // The browser can still display an image even when decode() rejects.
-    }
-
-    if (requestId !== imageRequestIdRef.current) return
-
-    incomingImageRef.current = targetImage
-    imageZIndexRef.current += 1
-
-    gsap.set(incomingLayer, {
-      xPercent: -100,
-      visibility: "visible",
-      zIndex: imageZIndexRef.current,
-    })
-
-    imageTimelineRef.current = gsap.timeline({
-      onComplete: () => {
-        gsap.set(currentLayer, { visibility: "hidden" })
-        currentImageRef.current = targetImage
-        incomingImageRef.current = null
-      },
-    }).to(incomingLayer, {
-      xPercent: 0,
-      duration: 0.4,
-      ease: "none",
-    })
-  }, [])
-
-  const commitImage = useCallback((targetImage: string) => {
-    imageRequestIdRef.current += 1
-    imageTimelineRef.current?.kill()
-    imageZIndexRef.current += 1
-
-    for (const [image, layer] of imageLayerRefs.current) {
-      const isTargetImage = image === targetImage
-
-      gsap.set(layer, {
-        xPercent: isTargetImage ? 0 : -100,
-        visibility: isTargetImage ? "visible" : "hidden",
-        zIndex: isTargetImage ? imageZIndexRef.current : 0,
-      })
-    }
-
-    currentImageRef.current = targetImage
-    incomingImageRef.current = null
-  }, [])
-
-  const handleMenuLinkClick = useCallback((href: string, image: string) => {
-    navigationImageRef.current = image === activeLink.image ? null : image
-    setHoveredHref(href)
-    commitImage(image)
-    onClose()
-  }, [activeLink.image, commitImage, onClose])
-
-  useLayoutEffect(() => {
-    if (navigationImageRef.current === activeLink.image) {
-      navigationImageRef.current = null
-    }
-  }, [activeLink.image])
-
-  useEffect(() => {
-    if (isOpen) navigationImageRef.current = null
-  }, [isOpen])
-
-  useLayoutEffect(() => {
-    void animateToImage(displayedImage)
-  }, [animateToImage, displayedImage])
 
   return (
     <>
@@ -294,78 +287,61 @@ const Menu = ({ backdropRef, menuRef, isOpen, onClose }: MenuProps) => {
         role="dialog"
         aria-modal="true"
         aria-hidden={!isOpen}
-        className={`invisible fixed inset-0 z-50 h-dvh w-screen overflow-y-auto bg-white py-6 ${
+        className={`invisible fixed inset-0 z-50 h-dvh w-screen overflow-y-auto bg-white ${
           isOpen ? "pointer-events-auto" : "pointer-events-none"
         }`}
       >
-        <div className="flex gap-4 justify-center h-full w-full p-8">
-            <div className="flex w-full justify-between items-center">
-                <div className="flex flex-col gap-10 w-1/4">
-                    <div className="flex flex-col gap-2">
-                        <p>Informations de contact</p>
-                        <div className="flex flex-col gap-2">
-                            <Link href="mailto:behsse.pro@gmail.com" className="text-2xl flex gap-4">behsse.pro@gmail.com</Link>
-                            <Link href="https://wa.me/33689038505" target="_blank" rel="noopener noreferrer" className="text-2xl">WhatsApp</Link>
-                        </div>
-                    </div>
-                    <div className="flex flex-col gap-2">
-                        <p>Social</p>
-                        <div className="flex flex-col gap-2">
-                            <Link href="https://www.linkedin.com/in/sebastien-zielinski/" target="_blank" className="text-2xl">Linkedin</Link>
-                            <Link href="https://www.instagram.com/behsse/" target="_blank" className="text-2xl">Instagram</Link>
-                        </div>
-                    </div>
-                </div>
-                <div className="relative h-80 w-55 shrink-0 overflow-hidden">
-                    {menuImages.map((image) => (
-                      <div
-                        key={image}
-                        ref={(layer) => {
-                          if (layer) imageLayerRefs.current.set(image, layer)
-                          else imageLayerRefs.current.delete(image)
-                        }}
-                        className={`absolute inset-0 flex items-center justify-center will-change-transform ${
-                          image === initialImage ? "" : "invisible"
-                        }`}
-                      >
-                        <img
-                          ref={(element) => {
-                            if (element) imageElementRefs.current.set(image, element)
-                            else imageElementRefs.current.delete(image)
-                          }}
-                          src={image}
-                          alt=""
-                          loading="eager"
-                          decoding="async"
-                          className="h-auto w-auto max-w-none shrink-0"
-                        />
-                      </div>
-                    ))}
-                </div>
-                <div
-                  className="w-1/4 flex flex-col gap-4 text-4xl font-light"
-                  onMouseLeave={() => setHoveredHref(null)}
-                >
-                    {menuLinks.map(({ href, label, image }) => {
-                      const isActive = isActivePath(pathname, href)
+        <div className="flex h-full min-h-full w-full flex-col justify-between gap-16 px-4 pt-28 pb-10 md:px-8 md:pt-36 md:pb-12">
+          <nav aria-label="Liens du menu" className="flex flex-col gap-2 md:gap-3">
+            {[...primaryLinks, ...secondaryLinks].map(({ href, label }, index) => {
+              const isActive = isActivePath(pathname, href)
 
-                      return (
-                        <Link
-                          key={href}
-                          href={href}
-                          onClick={() => handleMenuLinkClick(href, image)}
-                          onMouseEnter={() => setHoveredHref(href)}
-                          onFocus={() => setHoveredHref(href)}
-                          onBlur={() => setHoveredHref(null)}
-                          aria-current={isActive ? "page" : undefined}
-                          className={`hover:text-black ${isActive ? "text-black" : "text-gray-400"}`}
-                        >
-                          {label}
-                        </Link>
-                      )
-                    })}
-                </div>
+              return (
+                <TransitionLink
+                  key={href}
+                  href={href}
+                  label={label}
+                  onClick={onClose}
+                  aria-current={isActive ? "page" : undefined}
+                  className={`group flex w-fit items-baseline gap-3 leading-[0.95] transition-colors hover:text-black md:gap-4 ${
+                    isActive ? "text-black" : "text-black/40"
+                  }`}
+                >
+                  <span className="text-xs tracking-widest md:text-sm">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <span className="text-4xl tracking-[-0.03em] sm:text-5xl md:text-7xl">
+                    <MorphOnHoverLabel label={label} />
+                  </span>
+                </TransitionLink>
+              )
+            })}
+          </nav>
+
+          <div className="flex gap-12 md:gap-24">
+            <div className="flex flex-col gap-2">
+              <p className="text-xs uppercase tracking-[0.14em] text-black/40">Informations de contact</p>
+              <div className="flex flex-col gap-1">
+                <Link href="mailto:behsse.pro@gmail.com" className="group inline-flex w-fit text-lg md:text-xl">
+                  <ExternalLinkLabel label="behsse.pro@gmail.com" />
+                </Link>
+                <Link href="https://wa.me/@sebastien.zielinski" target="_blank" rel="noopener noreferrer" className="group inline-flex w-fit text-lg md:text-xl">
+                  <ExternalLinkLabel label="WhatsApp" />
+                </Link>
+              </div>
             </div>
+            <div className="flex flex-col gap-2">
+              <p className="text-xs uppercase tracking-[0.14em] text-black/40">Social</p>
+              <div className="flex flex-col gap-1">
+                <Link href="https://www.linkedin.com/in/sebastien-zielinski/" target="_blank" rel="noreferrer" className="group inline-flex w-fit text-lg md:text-xl">
+                  <ExternalLinkLabel label="LinkedIn" />
+                </Link>
+                <Link href="https://www.instagram.com/behsse/" target="_blank" rel="noreferrer" className="group inline-flex w-fit text-lg md:text-xl">
+                  <ExternalLinkLabel label="Instagram" />
+                </Link>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </>

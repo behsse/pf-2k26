@@ -8,6 +8,9 @@ import { usePathname } from "next/navigation"
 import { LogoMark } from "./LogoMark"
 import { NavFluidMask } from "./NavFluidMask"
 import { TransitionLink } from "./TransitionLink"
+import { ExternalLinkLabel } from "./ExternalLinkLabel"
+import { getLenis } from "./lenisRegistry"
+import { EMAIL, SOCIAL_LINKS, WHATSAPP_URL } from "../data/contact"
 
 const primaryLinks = [
   { href: "/", label: "Home" },
@@ -16,49 +19,10 @@ const primaryLinks = [
 
 const secondaryLinks = [
   { href: "/service", label: "Services" },
-  { href: "/faq", label: "FAQ" },
+  { href: "/#faq", label: "FAQ" },
   { href: "/about", label: "About" },
   { href: "/contact", label: "Contact" },
 ]
-
-/** lucide.dev "move-up-right" icon. */
-function MoveUpRightIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      className={className}
-    >
-      <path d="M13 5H19V11" />
-      <path d="M19 5L5 19" />
-    </svg>
-  )
-}
-
-/** Contact/social link: the label sits above an identical duplicate, both
- * clipped by a one-line-tall overflow-hidden mask. On hover the pair
- * shifts up by exactly one line, so the duplicate rolls into view where
- * the original was — never showing a partial line above or below — and
- * settles back down when the pointer leaves. The arrow slides in the same
- * beat, signaling "this leaves the page". */
-function ExternalLinkLabel({ label }: { label: string }) {
-  return (
-    <span className="inline-flex items-center gap-1.5">
-      <span className="relative block h-lh overflow-hidden">
-        <span className="flex flex-col transition-transform duration-400 ease-out group-hover:-translate-y-1/2">
-          <span>{label}</span>
-          <span aria-hidden="true">{label}</span>
-        </span>
-      </span>
-      <MoveUpRightIcon className="h-3.5 w-3.5 translate-y-0.5 -translate-x-0.5 opacity-0 transition-all duration-300 ease-out group-hover:translate-y-0 group-hover:translate-x-0 group-hover:opacity-100" />
-    </span>
-  )
-}
 
 /** Same font-weight morph as the "relief" word in the hero, but hover-driven
  * instead of auto-cycling: a hidden reference reserves the boldest weight's
@@ -149,10 +113,14 @@ export const Navbar = () => {
     }
 
     document.body.style.overflow = "hidden"
+    // Lenis scrolls from its own wheel listener, so overflow:hidden alone
+    // would not hold the page still behind the open menu.
+    getLenis()?.stop()
     window.addEventListener("keydown", closeOnEscape)
 
     return () => {
       document.body.style.overflow = previousOverflow
+      getLenis()?.start()
       window.removeEventListener("keydown", closeOnEscape)
     }
   }, [closeMenu, isMenuOpen])
@@ -195,9 +163,14 @@ export const Navbar = () => {
           </TransitionLink>
         </div>
         <div className="flex items-center gap-4">
-          <button
-            ref={ctaButtonRef as React.Ref<HTMLButtonElement>}
-            type="button"
+          {/* An anchor, not a button: it is a navigation, and TransitionLink
+            * plays the stripe wipe on the way. NavFluidMask only reads this
+            * element's rect and computed colours, so the tag change leaves the
+            * hover reveal untouched. */}
+          <TransitionLink
+            ref={ctaButtonRef as React.Ref<HTMLAnchorElement>}
+            href="/contact"
+            label="Contact"
             className="hidden cursor-pointer items-center gap-4 rounded-full border border-current bg-current px-5 py-2 md:px-6 sm:flex"
           >
             <span
@@ -206,7 +179,7 @@ export const Navbar = () => {
             >
               Réserve un appel
             </span>
-          </button>
+          </TransitionLink>
           <button
             ref={menuButtonRef as React.Ref<HTMLButtonElement>}
             type="button"
@@ -322,10 +295,10 @@ const Menu = ({ backdropRef, menuRef, isOpen, onClose }: MenuProps) => {
             <div className="flex flex-col gap-2">
               <p className="text-xs uppercase tracking-[0.14em] text-black/40">Informations de contact</p>
               <div className="flex flex-col gap-1">
-                <Link href="mailto:behsse.pro@gmail.com" className="group inline-flex w-fit text-lg md:text-xl">
-                  <ExternalLinkLabel label="behsse.pro@gmail.com" />
+                <Link href={`mailto:${EMAIL}`} className="group inline-flex w-fit text-lg md:text-xl">
+                  <ExternalLinkLabel label={EMAIL} />
                 </Link>
-                <Link href="https://wa.me/@sebastien.zielinski" target="_blank" rel="noopener noreferrer" className="group inline-flex w-fit text-lg md:text-xl">
+                <Link href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="group inline-flex w-fit text-lg md:text-xl">
                   <ExternalLinkLabel label="WhatsApp" />
                 </Link>
               </div>
@@ -333,12 +306,17 @@ const Menu = ({ backdropRef, menuRef, isOpen, onClose }: MenuProps) => {
             <div className="flex flex-col gap-2">
               <p className="text-xs uppercase tracking-[0.14em] text-black/40">Social</p>
               <div className="flex flex-col gap-1">
-                <Link href="https://www.linkedin.com/in/sebastien-zielinski/" target="_blank" rel="noreferrer" className="group inline-flex w-fit text-lg md:text-xl">
-                  <ExternalLinkLabel label="LinkedIn" />
-                </Link>
-                <Link href="https://www.instagram.com/behsse/" target="_blank" rel="noreferrer" className="group inline-flex w-fit text-lg md:text-xl">
-                  <ExternalLinkLabel label="Instagram" />
-                </Link>
+                {SOCIAL_LINKS.map((link) => (
+                  <Link
+                    key={link.label}
+                    href={link.href}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="group inline-flex w-fit text-lg md:text-xl"
+                  >
+                    <ExternalLinkLabel label={link.label} />
+                  </Link>
+                ))}
               </div>
             </div>
           </div>

@@ -6,6 +6,8 @@ import { Navbar } from "./components/Navbar";
 import { CustomScrollbar } from "./components/CustomScrollbar";
 import { Loader } from "./components/Loader";
 import { PageTransitionOverlay } from "./components/PageTransitionOverlay";
+import { SmoothScroll } from "./components/SmoothScroll";
+import { CookieBanner } from "./components/CookieBanner";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -39,11 +41,13 @@ export default function RootLayout({
             window.scrollTo(0, 0);
           `}
         </Script>
+        <SmoothScroll />
         <Loader />
         <PageTransitionOverlay />
         <Navbar />
         <CustomScrollbar />
         <main className="flex flex-1 flex-col">{children}</main>
+        <CookieBanner />
       </body>
     </html>
   );

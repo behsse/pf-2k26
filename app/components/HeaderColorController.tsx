@@ -3,6 +3,7 @@
 import { useLayoutEffect } from "react"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
+import { onSiteReady } from "./siteReady"
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -125,8 +126,15 @@ export function HeaderColorController() {
     window.addEventListener("site-header-color-refresh", refreshHeaderColor)
     applyHeaderColor(true)
 
+    // That first reading happens while the loader is still covering the
+    // viewport, so elementFromPoint returns the loader's own white backdrop
+    // and the header locks to black — wrong on any dark page, and never
+    // corrected unless the user happens to scroll. Re-read once it lifts.
+    const stopWaitingForReady = onSiteReady(refreshHeaderColor)
+
     return () => {
       window.removeEventListener("site-header-color-refresh", refreshHeaderColor)
+      stopWaitingForReady()
       context.revert()
     }
   }, [])

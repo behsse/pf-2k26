@@ -145,6 +145,43 @@ html::-webkit-scrollbar {
   min-height: 100vh;
 }
 
+/* Three beats rather than one continuous sweep: the arrow eases in from above,
+   RESTS at the centre of the ring for roughly a third of the cycle, then eases
+   out of the bottom. The hold is what makes it read as a deliberate cue rather
+   than a fast loop. The opacity steps hide the jump back to the top. */
+@keyframes scroll-cue-arrow {
+  0% {
+    transform: translateY(-150%);
+    opacity: 0;
+  }
+  28% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  62% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  92% {
+    transform: translateY(150%);
+    opacity: 0;
+  }
+  100% {
+    transform: translateY(150%);
+    opacity: 0;
+  }
+}
+
+.scroll-cue-arrow {
+  animation: scroll-cue-arrow 3.4s cubic-bezier(0.33, 0, 0.2, 1) infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-cue-arrow {
+    animation: none;
+  }
+}
+
 @keyframes marquee-scroll {
   from {
     transform: translateX(0);

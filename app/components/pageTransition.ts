@@ -1,3 +1,5 @@
+import { getLenis } from "./lenisRegistry"
+
 type CoverFn = (label: string) => Promise<void>
 type RevealFn = () => Promise<void>
 type ForceResetFn = () => void
@@ -18,6 +20,28 @@ export function registerTransition(cover: CoverFn, reveal: RevealFn, forceReset:
 
 function delay(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+type ScrollTarget = { scrollTo: (target: number | HTMLElement, options?: object) => void }
+
+/** Puts the incoming page at the right place while the cover still hides it:
+ * the top for a plain route, or the anchored section for a `#hash` link.
+ *
+ * Always `immediate` — an eased scroll would still be travelling when the
+ * cover lifts, so the reveal would show the page sliding into position instead
+ * of already being there. */
+function scrollToTarget(href: string, lenis: ScrollTarget | null) {
+  const hash = href.slice(href.indexOf("#"))
+  const target = href.includes("#") ? document.querySelector<HTMLElement>(hash) : null
+
+  if (target) {
+    if (lenis) lenis.scrollTo(target, { immediate: true, force: true })
+    else target.scrollIntoView()
+    return
+  }
+
+  if (lenis) lenis.scrollTo(0, { immediate: true, force: true })
+  else window.scrollTo(0, 0)
 }
 
 // The earlier version chained cover → router.push → "wait for usePathname()
@@ -48,19 +72,27 @@ export async function navigateWithTransition(
   // scrolling isn't a click — without an explicit lock the user can keep
   // scrolling the outgoing page underneath the cover, so the reveal exposes
   // whatever mid-page position they scrolled to instead of the new page's top.
+  // Lenis has to be stopped as well as the document: it drives scrolling from
+  // its own wheel listener, so overflow:hidden alone would not hold it.
+  const lenis = getLenis()
   const previousOverflow = document.documentElement.style.overflow
   document.documentElement.style.overflow = "hidden"
+  lenis?.stop()
   try {
     await coverImpl(label)
     router.push(href)
-    window.scrollTo(0, 0)
+    // Positioned AFTER the settle delay, not before it: an anchored link needs
+    // its target section to exist in the DOM before it can be measured, and on
+    // a cross-page jump that section only arrives with the new page.
     await delay(SETTLE_DELAY_MS)
+    scrollToTarget(href, lenis)
     await revealImpl()
   } catch {
     // Swallow — the finally block below guarantees the overlay is left in
     // a clean, non-blocking state regardless of what failed.
   } finally {
     document.documentElement.style.overflow = previousOverflow
+    lenis?.start()
     forceResetImpl()
     isTransitioning = false
   }

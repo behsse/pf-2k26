@@ -97,6 +97,7 @@ export function Faq() {
 
   return (
     <section
+      id="faq"
       data-faq-section
       aria-labelledby="faq-title"
       className="relative z-20 bg-white px-4 pt-12 pb-28 md:px-8 md:pt-20 md:pb-40"

@@ -4,6 +4,7 @@ import { useLayoutEffect, useRef, useState } from "react"
 import gsap from "gsap"
 import { LogoMark } from "./LogoMark"
 import { markSiteReady } from "./siteReady"
+import { getLenis } from "./lenisRegistry"
 
 const LOAD_DURATION = 2
 
@@ -22,9 +23,13 @@ export function Loader() {
     const html = document.documentElement
     const previousOverflow = html.style.overflow
     html.style.overflow = "hidden"
+    // Lenis scrolls from its own wheel listener, so overflow:hidden alone
+    // would not hold the page still behind the loader.
+    getLenis()?.stop()
 
     const restoreScroll = () => {
       html.style.overflow = previousOverflow
+      getLenis()?.start()
     }
 
     const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)")

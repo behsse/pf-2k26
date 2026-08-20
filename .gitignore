@@ -32,6 +32,9 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+# The template carries no secrets and is the only record of which variables the
+# contact route needs.
+!.env.example
 
 # vercel
 .vercel

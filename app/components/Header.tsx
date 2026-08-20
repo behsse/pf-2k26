@@ -5,6 +5,7 @@ import { FluidTextReveal } from "./fluidTextReveal"
 import { registerHeroFluidEngine, unregisterHeroFluidEngine } from "./heroFluidRegistry"
 import { measureFontAscent } from "./textBake"
 import { RevealText } from "./RevealText"
+import { ScrollCue } from "./ScrollCue"
 
 const REVEAL_BG = "#0a0a0a"
 const REVEAL_TEXT_COLOR = "#ffffff"
@@ -212,11 +213,22 @@ const Header = () => {
               {" aux idées qui méritent d’exister."}
             </RevealText>
           </h1>
-          <p className="hidden font-light pb-1 text-right text-xs uppercase tracking-[0.18em] md:block">
-            <RevealText trigger="load" delay={0.12}>
-              Défiler pour explorer
-            </RevealText>
-          </p>
+          {/* The cue rides along with the label rather than sitting on its own:
+            * both say the same thing, and splitting them would put two scroll
+            * prompts in one corner. */}
+          <div className="hidden shrink-0 items-center gap-3 pb-1 md:flex">
+            <ScrollCue tone="light" />
+            {/* flex + leading-none rather than a plain block: RevealText's mask
+              * is an inline-block, and an inline-block sits on the text
+              * baseline, which leaves descender space under it. That padding is
+              * inside the paragraph's box, so centring the boxes still left the
+              * glyphs sitting 6px low next to the ring. */}
+            <p className="flex items-center font-light text-xs uppercase leading-none tracking-[0.18em]">
+              <RevealText trigger="load" delay={0.12}>
+                Défiler pour explorer
+              </RevealText>
+            </p>
+          </div>
         </div>
       </section>
 

@@ -1,6 +1,18 @@
+import type { StaticImageData } from "next/image"
+
+import contactImage from "@/public/contact.webp"
+import homeImage from "@/public/home.webp"
+import meProImage from "@/public/me-pro.webp"
+import serviceImage from "@/public/service.webp"
+import worksImage from "@/public/works.webp"
+
+/** Images are imported rather than referenced by path so their real dimensions
+ * travel with them. The story mixes formats — the portrait is 941×1672 where
+ * the rest are 287×384 — and every place one is drawn derives its shape from
+ * these numbers instead of imposing one and cropping the difference away. */
 export type StorySegment =
   | { type: "text"; value: string }
-  | { type: "image"; src: string; alt: string }
+  | { type: "image"; src: StaticImageData; alt: string }
 
 /** The About copy, cut into segments so thumbnails can sit INSIDE the running
  * text rather than beside it. Written around the positioning chosen for the
@@ -12,7 +24,7 @@ export type StorySegment =
 export const ABOUT_STORY: StorySegment[][] = [
   [
     { type: "text", value: "Je m'appelle Sébastien (Behsse)." },
-    { type: "image", src: "/about.webp", alt: "Portrait de Behsse" },
+    { type: "image", src: meProImage, alt: "Portrait de Behsse" },
     {
       type: "text",
       value:
@@ -25,7 +37,7 @@ export const ABOUT_STORY: StorySegment[][] = [
       value:
         "J'ai appris seul. Pas d'école de design, pas de cursus tout tracé — de la pratique, des projets ratés,",
     },
-    { type: "image", src: "/works.webp", alt: "Projet en cours de conception" },
+    { type: "image", src: worksImage, alt: "Projet en cours de conception" },
     {
       type: "text",
       value:
@@ -38,7 +50,7 @@ export const ABOUT_STORY: StorySegment[][] = [
       value:
         "Les idées tièdes ne m'intéressent pas. Un template rempli à la va-vite, un site qui ressemble à mille autres,",
     },
-    { type: "image", src: "/home.webp", alt: "Page d'accueil sur-mesure" },
+    { type: "image", src: homeImage, alt: "Page d'accueil sur-mesure" },
     {
       type: "text",
       value:
@@ -47,7 +59,7 @@ export const ABOUT_STORY: StorySegment[][] = [
   ],
   [
     { type: "text", value: "Je dessine" },
-    { type: "image", src: "/service.webp", alt: "Maquette d'interface" },
+    { type: "image", src: serviceImage, alt: "Maquette d'interface" },
     {
       type: "text",
       value:
@@ -60,7 +72,7 @@ export const ABOUT_STORY: StorySegment[][] = [
       value:
         "Je travaille avec des startups qui lancent leur marque et des entreprises établies qui veulent enfin un site à la hauteur de ce qu'elles sont devenues.",
     },
-    { type: "image", src: "/contact.webp", alt: "Collaboration client" },
+    { type: "image", src: contactImage, alt: "Collaboration client" },
   ],
   [
     {

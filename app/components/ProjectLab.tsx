@@ -6,6 +6,7 @@ import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { placeholderProjects } from "@/app/data/portfolio"
 import { ProjectFloatField } from "./ProjectFloatField"
+import { RevealText } from "./RevealText"
 import { ScrollCue } from "./ScrollCue"
 
 gsap.registerPlugin(ScrollTrigger)
@@ -136,11 +137,16 @@ export function ProjectLab() {
             id="projects-title"
             className="text-center text-4xl font-semibold leading-[1.05] tracking-[-0.03em] md:text-6xl"
           >
-            Tous mes projets
+            {/* trigger="load" like every other hero on the site: this sits at
+              * the top of the page, already in view before any scroll, so a
+              * scroll-triggered reveal would have nothing to wait for. */}
+            <RevealText trigger="load">Tous mes projets</RevealText>
           </h1>
           <p className="mt-6 max-w-2xl text-center text-base leading-relaxed text-white/60 md:text-lg">
-            Une vitrine organisée de branding, de produits numériques, de sites
-            Web et d&apos;expériences mobiles
+            <RevealText trigger="load" delay={0.08}>
+              Une vitrine organisée de branding, de produits numériques, de sites
+              Web et d&apos;expériences mobiles
+            </RevealText>
           </p>
         </div>
 

@@ -1,7 +1,8 @@
 import { getLenis } from "./lenisRegistry"
+import { holdEntrance, releaseEntrance } from "./siteReady"
 
 type CoverFn = (label: string) => Promise<void>
-type RevealFn = () => Promise<void>
+type RevealFn = (onMostlyCleared?: () => void) => Promise<void>
 type ForceResetFn = () => void
 
 let coverImpl: CoverFn | null = null
@@ -78,6 +79,11 @@ export async function navigateWithTransition(
   const previousOverflow = document.documentElement.style.overflow
   document.documentElement.style.overflow = "hidden"
   lenis?.stop()
+  // Before the push, not after: the incoming page's components mount during
+  // this transition, and they check on mount whether they may play their
+  // entrance. Holding first means they queue instead of firing behind the
+  // cover.
+  holdEntrance()
   try {
     await coverImpl(label)
     router.push(href)
@@ -86,11 +92,18 @@ export async function navigateWithTransition(
     // a cross-page jump that section only arrives with the new page.
     await delay(SETTLE_DELAY_MS)
     scrollToTarget(href, lenis)
-    await revealImpl()
+    // The overlay decides the exact beat: it releases the entrance partway
+    // through the lift, once most of the cover has cleared. Releasing at the
+    // start of the lift meant the animation was largely over behind the bands;
+    // releasing at the end left a dead pause on a fully visible page.
+    await revealImpl(releaseEntrance)
   } catch {
     // Swallow — the finally block below guarantees the overlay is left in
     // a clean, non-blocking state regardless of what failed.
   } finally {
+    // Belt and braces: if anything above threw before the release, the queued
+    // entrances would otherwise never run and the new page would stay blank.
+    releaseEntrance()
     document.documentElement.style.overflow = previousOverflow
     lenis?.start()
     forceResetImpl()

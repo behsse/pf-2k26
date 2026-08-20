@@ -1,16 +1,26 @@
-import { Footer } from "../components/Footer";
+import type { Metadata } from "next";
+import { ContactExperience } from "../components/ContactExperience";
 import { HeaderColorController } from "../components/HeaderColorController";
 
+export const metadata: Metadata = {
+  title: "Contact — Behsse",
+  description:
+    "Démarrer un projet, réserver un créneau téléphonique, ou récupérer mon adresse email.",
+};
+
+/** No Footer here, deliberately.
+ *
+ * The footer is `position: fixed` and needs a screen's worth of scroll room
+ * below the content to be revealed at all — and this page locks to a single
+ * viewport so the experience never scrolls away from the question being
+ * answered. What the footer carries that matters on a contact page (the
+ * privacy policy, the social links) is carried by the recap and confirmation
+ * screens instead. */
 export default function ContactPage() {
   return (
-    <div data-scroll-root className="relative isolate flex flex-1 flex-col bg-white">
+    <div data-scroll-root className="relative isolate flex flex-1 flex-col bg-[#f2f2f2]">
       <HeaderColorController />
-      <section className="relative z-10 flex min-h-dvh flex-col justify-center bg-white px-4 pt-28 pb-20 text-black md:px-8">
-        <p className="max-w-3xl text-4xl font-semibold leading-[0.95] tracking-[-0.04em] md:text-7xl">
-          Contact
-        </p>
-      </section>
-      <Footer />
+      <ContactExperience />
     </div>
   );
 }

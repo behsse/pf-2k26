@@ -13,6 +13,12 @@ const STRIPE_DURATION = 0.65
 // navigateWithTransition's own try/finally as the only way out.
 const ANIMATION_TIMEOUT_MS = 1500
 
+/** How far into the lift the incoming page is allowed to start animating.
+ * Late enough that the bands are mostly out of the way and the entrance is
+ * actually watchable, early enough that the page is not sitting frozen once
+ * the last band clears. */
+const REVEAL_RELEASE_RATIO = 0.50
+
 /** Full-page black/white stripe wipe between routes — same technique as the
  * hero→about transition-stripes, just covering the whole viewport and
  * driven by navigation instead of scroll. TransitionLink calls into this
@@ -90,10 +96,14 @@ export function PageTransitionOverlay() {
         timeline.to(labelEl, { opacity: 1, duration: 0.3 }, "-=0.25")
       })
 
-    const reveal = () =>
+    /** `onMostlyCleared` fires partway through the lift rather than at either
+      * end of it, which is what lets the incoming page's entrance animations
+      * start while the last bands are still sliding off. */
+    const reveal = (onMostlyCleared?: () => void) =>
       withAnimationTimeout((resolve) => {
         const elements = getElements()
         if (!elements) {
+          onMostlyCleared?.()
           resolve()
           return
         }
@@ -105,6 +115,7 @@ export function PageTransitionOverlay() {
           gsap.set(stripes, { scaleY: 0 })
           gsap.set(labelEl, { opacity: 0 })
           gsap.set(overlay, { pointerEvents: "none" })
+          onMostlyCleared?.()
           resolve()
           return
         }
@@ -132,6 +143,13 @@ export function PageTransitionOverlay() {
             start,
           )
         })
+
+        // Read the duration only once the bands are in, then drop the callback
+        // at a fraction of it. Inserting inside the existing span rather than
+        // past its end, so this never stretches the animation.
+        if (onMostlyCleared) {
+          timeline.call(onMostlyCleared, undefined, timeline.duration() * REVEAL_RELEASE_RATIO)
+        }
       })
 
     const forceReset = () => {

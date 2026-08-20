@@ -1,7 +1,8 @@
 "use client"
 
 import { useLayoutEffect, useRef } from "react"
-import Image from "next/image"
+import Image, { getImageProps } from "next/image"
+import type { StaticImageData } from "next/image"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
 import { ABOUT_STORY, type StorySegment } from "@/app/data/aboutStory"
@@ -22,17 +23,41 @@ const WORD_FADE_DURATION = 0.15
  * context, and being later in the document they paint over any positioned
  * element sitting earlier inside the same paragraph, whatever its z-index. A
  * fixed-position element outside the text escapes that entirely. */
-function InlineThumb({ src, alt }: { src: string; alt: string }) {
+/** Longest side of the enlarged preview, in pixels. The optimised source is
+ * resolved here rather than in the hover handler: the component knows the
+ * image's real dimensions, the handler only ever sees a DOM node. */
+const PREVIEW_SIZE = 480
+
+function InlineThumb({ src, alt }: { src: StaticImageData; alt: string }) {
+  const portrait = src.height >= src.width
+  const previewWidth = portrait ? Math.round((PREVIEW_SIZE * src.width) / src.height) : PREVIEW_SIZE
+  const previewHeight = portrait ? PREVIEW_SIZE : Math.round((PREVIEW_SIZE * src.height) / src.width)
+
+  // getImageProps rather than a hand-built /_next/image URL: same optimiser,
+  // but the query it produces is Next's business rather than something written
+  // here that quietly breaks the day the loader changes.
+  const previewSrc = getImageProps({ src, alt: "", width: previewWidth, height: previewHeight })
+    .props.src
+
   // select-none and the default cursor stop the chip behaving like text:
   // without them the pointer turns into an I-beam over it and a double click
   // selects the words around it.
+  //
+  // Only the height is set. The width follows from the image's own proportions,
+  // so a 3:4 thumbnail and a 9:16 portrait both keep their shape instead of
+  // being squeezed into one box and cropped.
   return (
     <span
       data-thumb
-      data-src={src}
-      className="relative inline-block h-[0.85em] w-[1.15em] translate-y-[0.08em] cursor-default overflow-hidden rounded-[3px] align-baseline select-none"
+      data-preview={previewSrc}
+      className="inline-block translate-y-[0.08em] cursor-default overflow-hidden rounded-[3px] align-baseline select-none"
     >
-      <Image src={src} alt={alt} fill sizes="40px" className="object-cover" />
+      <Image
+        src={src}
+        alt={alt}
+        sizes="60px"
+        className="block h-[0.95em] w-auto"
+      />
     </span>
   )
 }
@@ -84,7 +109,7 @@ export function AboutStory() {
       let activeChip: HTMLElement | null = null
 
       const show = (chip: HTMLElement, x: number, y: number) => {
-        const src = chip.dataset.src
+        const src = chip.dataset.preview
         if (!src) return
 
         activeChip = chip
@@ -230,16 +255,21 @@ export function AboutStory() {
 
       {/* One shared preview for every thumbnail, fixed to the viewport and
         * outside the text. Being fixed puts it in the page's top stacking
-        * layer, so the animated words can no longer paint over it. */}
+        * layer, so the animated words can no longer paint over it.
+        *
+        * Height only, and no object-fit. The box was 17rem by 13rem — landscape
+        * — while every image in the story is a portrait, so `object-cover` was
+        * throwing away close to half of each one. Letting the width follow the
+        * image means the frame changes shape with whatever is inside it. */}
       <div
         ref={previewRef}
         aria-hidden="true"
-        className="pointer-events-none fixed top-0 left-0 z-50 h-[13rem] w-[17rem] overflow-hidden rounded-[4px] opacity-0 will-change-transform"
+        className="pointer-events-none fixed top-0 left-0 z-50 h-[17rem] w-auto overflow-hidden rounded-[4px] opacity-0 will-change-transform"
       >
         {/* A plain img: the source is swapped imperatively on hover, which
           * next/image's managed src does not allow. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img ref={previewImageRef} alt="" className="h-full w-full object-cover" />
+        <img ref={previewImageRef} alt="" className="block h-full w-auto" />
       </div>
     </div>
   )

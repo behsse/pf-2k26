@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import Image from "next/image";
+import meProImage from "@/public/me-pro.webp";
 import { TransitionLink } from "../components/TransitionLink";
 import { Footer } from "../components/Footer";
 import { HeaderColorController } from "../components/HeaderColorController";
 import { AboutStory } from "../components/AboutStory";
+import { RevealText } from "../components/RevealText";
 import { ScrollCue } from "../components/ScrollCue";
 
 /** Title and description are what actually show in search results, so they
@@ -30,7 +32,7 @@ export default function AboutPage() {
           id="about-title"
           className="text-center text-[clamp(2.5rem,9.5vw,10rem)] font-light uppercase leading-[0.9] tracking-[-0.03em]"
         >
-          Creative developer
+          <RevealText trigger="load">Creative developer</RevealText>
         </h1>
 
         {/* flex-1 hands this wrapper whatever height is left between the title
@@ -39,36 +41,49 @@ export default function AboutPage() {
           * and push the rest past the fold on a short viewport. min-h-0 is what
           * allows a flex child to shrink below its content's natural size. */}
         <div className="flex min-h-0 w-full flex-1 items-center justify-center py-6">
-          {/* An explicit height, not h-full or self-stretch. The image inside is
-            * absolutely positioned so it contributes no size of its own, and a
-            * height that comes from flex stretching is not a base `aspect-ratio`
-            * will derive a width from — the box ended up 0 wide either way. A
-            * definite height makes the ratio produce the width, and the vh unit
-            * still lets the portrait grow with the space available. */}
-          <div className="relative aspect-[4/5] h-[clamp(200px,38vh,420px)] flex-none overflow-hidden">
+          {/* The height is the only dimension set, and the width follows from
+            * the file's own proportions.
+            *
+            * It used to be a `fill` image in an `aspect-4/5` box, which meant
+            * the box decided the shape and `object-cover` cropped whatever did
+            * not agree — me-pro.webp is 941×1672, nowhere near 4:5, so its top
+            * and bottom were being cut off. Importing the file gives next/image
+            * its real dimensions, and `h-… w-auto` then reproduces them exactly.
+            * Swap the portrait for one of any shape and the layout follows.
+            *
+            * The vh unit still lets it grow into whatever room the flex row has
+            * left between the title and the paragraph. */}
+          {/* leading-[0] because the mask's inner span is an inline-block and
+            * therefore sits on a text baseline, which was leaving 7px of empty
+            * line box under the portrait inside the mask. */}
+          <RevealText trigger="load" delay={0.06} className="flex-none leading-0">
             <Image
-              src="/about.webp"
+              src={meProImage}
               alt="Portrait de Behsse, designer et développeur web freelance"
-              fill
-              sizes="336px"
-              className="object-cover"
+              sizes="(min-width: 768px) 420px, 60vw"
+              className="block h-[clamp(200px,38vh,420px)] w-auto"
               priority
             />
-          </div>
+          </RevealText>
         </div>
 
         {/* Left-aligned and full width so it lines up with the logo, capped so
           * it breaks onto two lines instead of running edge to edge as one. */}
         <p className="w-full max-w-[68ch] self-start text-left text-lg uppercase leading-[1.25] tracking-[-0.01em] md:text-[1.75rem]">
-          Une collaboration simple, une communication claire.{" "}
-          <TransitionLink
-            href="/contact"
-            label="Contact"
-            className="underline underline-offset-[6px]"
-          >
-            Travaillons ensemble
-          </TransitionLink>{" "}
-          et construisons quelque chose qui fera grandir votre activité.
+          {/* One mask around the whole sentence rather than one per line: the
+            * link sits mid-sentence, and splitting it would cut the phrase in
+            * two and animate the halves apart. */}
+          <RevealText trigger="load" delay={0.1} className="w-full">
+            Une collaboration simple, une communication claire.{" "}
+            <TransitionLink
+              href="/contact"
+              label="Contact"
+              className="underline underline-offset-[6px]"
+            >
+              Travaillons ensemble
+            </TransitionLink>{" "}
+            et construisons quelque chose qui fera grandir votre activité.
+          </RevealText>
         </p>
 
         <ScrollCue tone="dark" className="mt-6 shrink-0 md:mt-8" />

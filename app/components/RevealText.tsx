@@ -4,7 +4,7 @@ import { useLayoutEffect, useRef } from "react"
 import type { ReactNode, RefObject } from "react"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
-import { onSiteReady } from "./siteReady"
+import { onEntranceReady } from "./siteReady"
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -59,7 +59,10 @@ export function RevealText({
     }
 
     if (trigger === "load") {
-      const cancel = onSiteReady(play)
+      // Not onSiteReady: that only knows about the first load. Arriving from
+      // another page, the entrance has to wait for the transition cover to
+      // start lifting instead, or it plays hidden behind it.
+      const cancel = onEntranceReady(play)
       return cancel
     }
 

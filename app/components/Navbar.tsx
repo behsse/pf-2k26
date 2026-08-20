@@ -167,10 +167,15 @@ export const Navbar = () => {
             * plays the stripe wipe on the way. NavFluidMask only reads this
             * element's rect and computed colours, so the tag change leaves the
             * hover reveal untouched. */}
+          {/* data-header-cta is the handle globals.css uses to drop this pill
+            * while the contact experience is running — pointing at /contact
+            * from inside /contact is noise. NavFluidMask skips it on its own
+            * once it is hidden, since it already guards on a zero-width rect. */}
           <TransitionLink
             ref={ctaButtonRef as React.Ref<HTMLAnchorElement>}
             href="/contact"
             label="Contact"
+            data-header-cta
             className="hidden cursor-pointer items-center gap-4 rounded-full border border-current bg-current px-5 py-2 md:px-6 sm:flex"
           >
             <span

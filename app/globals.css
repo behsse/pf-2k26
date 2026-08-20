@@ -130,6 +130,13 @@
   will-change: color;
 }
 
+/* The contact experience owns the whole viewport and never scrolls, so the
+   header's own "Réserve un appel" pill is both redundant and a way out of a
+   flow the visitor is halfway through. The logo and the menu stay. */
+body[data-contact-flow="active"] [data-header-cta] {
+  display: none;
+}
+
 /* Native scrollbar hidden — CustomScrollbar.tsx renders the visible one. */
 html {
   scrollbar-width: none;

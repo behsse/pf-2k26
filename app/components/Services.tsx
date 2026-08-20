@@ -2,33 +2,10 @@
 
 import { useLayoutEffect, useRef } from "react"
 import { RevealText } from "./RevealText"
-
-const SERVICE_CATEGORIES = [
-  {
-    title: "Branding",
-    items: [
-      "Logo",
-      "Identité visuelle",
-      "Design UI/UX",
-      "Identité de marque",
-      "Web design",
-      "Illustration",
-    ],
-  },
-  {
-    title: "Développement",
-    items: [
-      "Développement web",
-      "Développement frontend",
-      "Développement backend",
-      "Application mobile",
-      "Gestion de base de données",
-      "Créatif développement",
-      "Shopify & Wordpress",
-      "Optimisation SEO",
-    ],
-  },
-]
+// Same list as the /service showcase: one catalogue, two presentations. The
+// categories used to be declared here and again over there, which is how the
+// two pages ended up advertising different services.
+import { SERVICE_OFFER as SERVICE_CATEGORIES } from "../data/serviceOffer"
 
 const MARQUEE_REPEAT_COUNT = 20
 const MARQUEE_SPEED_PX_PER_SEC = 30
@@ -101,7 +78,17 @@ function ServiceRow({ label }: { label: string }) {
   )
 }
 
-function ServiceCategory({ number, title, items }: { number: string; title: string; items: string[] }) {
+function ServiceCategory({
+  number,
+  title,
+  items,
+}: {
+  number: string
+  title: string
+  // Only the label is needed here; the showcase on /service is what uses the
+  // rest of each item.
+  items: Array<{ label: string }>
+}) {
   return (
     <div>
       <div className="flex items-center gap-4 border-t border-black/15 px-4 py-8 md:gap-6 md:px-8 md:py-10">
@@ -114,7 +101,7 @@ function ServiceCategory({ number, title, items }: { number: string; title: stri
       </div>
       <div>
         {items.map((item) => (
-          <ServiceRow key={item} label={item} />
+          <ServiceRow key={item.label} label={item.label} />
         ))}
       </div>
     </div>

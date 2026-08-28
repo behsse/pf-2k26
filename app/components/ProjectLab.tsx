@@ -4,10 +4,11 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react"
 import Image from "next/image"
 import gsap from "gsap"
 import { ScrollTrigger } from "gsap/ScrollTrigger"
-import { placeholderProjects } from "@/app/data/portfolio"
+import { placeholderProjects, type PlaceholderProject } from "@/app/data/portfolio"
 import { ProjectFloatField } from "./ProjectFloatField"
 import { RevealText } from "./RevealText"
 import { ScrollCue } from "./ScrollCue"
+import { TransitionLink } from "./TransitionLink"
 
 gsap.registerPlugin(ScrollTrigger)
 
@@ -74,6 +75,92 @@ function useColumnCount() {
   }, [])
 
   return columns
+}
+
+/** One gallery card. Only the projects that have a case study written become
+ * links — the rest keep exactly the markup they had, with no cursor change and
+ * no hover, so nothing promises a page that does not exist. */
+function ProjectCard({ project }: { project: PlaceholderProject }) {
+  const captionRef = useRef<HTMLDivElement>(null)
+
+  // Same treatment as the home grid: the title and the year live on the image
+  // and slide up from its bottom edge on hover or focus.
+  useLayoutEffect(() => {
+    const caption = captionRef.current
+    if (!caption) return
+
+    gsap.set(caption, { yPercent: 100, autoAlpha: 0 })
+  }, [])
+
+  const animateCaption = (visible: boolean) => {
+    const caption = captionRef.current
+    if (!caption) return
+
+    const reducedMotion = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    ).matches
+
+    gsap.to(caption, {
+      yPercent: visible ? 0 : 100,
+      autoAlpha: visible ? 1 : 0,
+      duration: reducedMotion ? 0 : 0.45,
+      ease: visible ? "power3.out" : "power3.in",
+      overwrite: "auto",
+    })
+  }
+
+  const card = (
+    <article
+      className="group"
+      onMouseEnter={() => animateCaption(true)}
+      onMouseLeave={() => animateCaption(false)}
+      onFocus={() => animateCaption(true)}
+      onBlur={() => animateCaption(false)}
+    >
+      <div className="relative isolate aspect-3/4 overflow-hidden bg-white/5 rounded-md">
+        {/* `sizes` is twice the card's own width on purpose. The covers are
+          * landscape (3:2) and the card is portrait (3:4), so object-cover
+          * scales them by HEIGHT: the image is drawn twice as wide as the slot
+          * it fills, and everything but the middle is cropped away. Quoting the
+          * slot width here made Next serve a file half the resolution the
+          * browser then had to blow up — hence the pixelation. */}
+        <Image
+          src={project.image}
+          alt={project.alt}
+          fill
+          quality={90}
+          sizes="(max-width: 767px) 100vw, (max-width: 1279px) 66vw, 50vw"
+          className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+        />
+        <div
+          ref={captionRef}
+          className="pointer-events-none absolute inset-x-0 bottom-0 text-white"
+        >
+          {/* Same gradient as the home grid, and no backdrop-blur for the same
+              reason: it resolved after the slide-up, so the band went sharp
+              then blurry in view. */}
+          <div
+            aria-hidden
+            className="absolute inset-0 [background:linear-gradient(to_top,rgba(0,0,0,0.92)_0%,rgba(0,0,0,0.8)_22%,rgba(0,0,0,0.5)_52%,rgba(0,0,0,0.18)_78%,rgba(0,0,0,0)_100%)]"
+          />
+          <div className="relative flex items-baseline justify-between gap-3 px-3 pb-3 pt-10">
+            <h2 className="text-sm uppercase tracking-[0.12em]">{project.title}</h2>
+            <p className="text-xs uppercase tracking-[0.12em] text-white/65">
+              {project.status}
+            </p>
+          </div>
+        </div>
+      </div>
+    </article>
+  )
+
+  if (!project.slug) return card
+
+  return (
+    <TransitionLink href={`/projets/${project.slug}`} label={project.title} className="block">
+      {card}
+    </TransitionLink>
+  )
 }
 
 /** The title is a full-viewport sticky hero: it holds the screen, centred, and
@@ -171,25 +258,7 @@ export function ProjectLab() {
               style={{ marginTop: COLUMN_OFFSETS[columnIndex % COLUMN_OFFSETS.length] }}
             >
               {column.map((project) => (
-                <article key={project.id} className="group">
-                  <div className="relative aspect-[3/4] overflow-hidden bg-white/5">
-                    <Image
-                      src={project.image}
-                      alt={project.alt}
-                      fill
-                      sizes="(max-width: 767px) 50vw, (max-width: 1279px) 33vw, 25vw"
-                      className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
-                    />
-                  </div>
-                  <div className="mt-3 flex items-baseline justify-between gap-4">
-                    <h2 className="text-sm uppercase tracking-[0.12em] text-white/80">
-                      {project.title}
-                    </h2>
-                    <p className="text-xs uppercase tracking-[0.12em] text-white/40">
-                      {project.status}
-                    </p>
-                  </div>
-                </article>
+                <ProjectCard key={project.id} project={project} />
               ))}
             </div>
           ))}

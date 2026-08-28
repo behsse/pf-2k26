@@ -13,7 +13,7 @@ const FAQ_ITEMS = [
   {
     question: "Combien de temps pour un site ?",
     answer:
-      "Compte 1 à 2 semaines pour un projet standard. Le délai précis est toujours confirmé au devis, selon la complexité.",
+      "Compte 1 à 2 semaines pour un projet standard. Le délai précis est toujours confirmé au devis, selon la complexité et le projet.",
   },
   {
     question: "Combien de retouches sont incluses ?",
@@ -28,7 +28,7 @@ const FAQ_ITEMS = [
   {
     question: "Comment se passe le paiement ?",
     answer:
-      "50% d'acompte au démarrage, 50% à la livraison. Pas de mauvaise surprise en cours de route.",
+      "40% d'acompte au démarrage puis 60% avant la livraison. Pas de mauvaise surprise en cours de route.",
   },
   {
     question: "Que se passe-t-il si je veux arrêter en cours de route ?",

@@ -4,22 +4,36 @@ export type PlaceholderProject = {
   status: string
   image: string
   alt: string
+  /** Set only once a case study exists for this project in `projects.ts`.
+   * Without it the card renders as plain markup rather than a link — no hover
+   * affordance, no dead page for a visitor or a crawler to land on. */
+  slug?: string
 }
 
 export const placeholderProjects: PlaceholderProject[] = [
   {
-    id: "placeholder-01",
-    title: "Projet 01",
+    id: "behsse-ui",
+    title: "Behsse UI",
     status: "2026",
-    image: "/home.webp",
-    alt: "Visuel temporaire du projet 01",
+    image: "/projects/behsse-ui/cover.webp",
+    alt: "Visuel du site ui.behsse.com rendu sur un MacBook",
+    slug: "behsse-ui",
   },
   {
-    id: "placeholder-02",
-    title: "Projet 02",
+    id: "print-canicule",
+    title: "Print Canicule",
     status: "2026",
-    image: "/works.webp",
-    alt: "Visuel temporaire du projet 02",
+    image: "/projects/print-canicule/cover.webp",
+    alt: "Visuel principal du projet Print Canicule",
+    slug: "print-canicule",
+  },
+  {
+    id: "redbull",
+    title: "Red Bull",
+    status: "2026",
+    image: "/projects/redbull/cover.webp",
+    alt: "La canette Red Bull Original en 3D sur fond bleu",
+    slug: "redbull",
   },
   {
     id: "placeholder-03",
@@ -56,11 +70,4 @@ export const placeholderProjects: PlaceholderProject[] = [
     image: "/home.webp",
     alt: "Visuel temporaire du projet 07",
   },
-  {
-    id: "placeholder-08",
-    title: "Projet 08",
-    status: "2026",
-    image: "/works.webp",
-    alt: "Visuel temporaire du projet 08",
-  }
 ]

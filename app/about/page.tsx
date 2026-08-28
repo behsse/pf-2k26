@@ -61,7 +61,7 @@ export default function AboutPage() {
               src={meProImage}
               alt="Portrait de Behsse, designer et développeur web freelance"
               sizes="(min-width: 768px) 420px, 60vw"
-              className="block h-[clamp(200px,38vh,420px)] w-auto"
+              className="block h-[clamp(200px,38vh,420px)] w-auto rounded-md"
               priority
             />
           </RevealText>

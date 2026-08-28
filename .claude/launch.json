@@ -6,6 +6,18 @@
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["dev"],
       "port": 3000
+    },
+    {
+      "name": "pf2k26-dev-alt",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["dev", "--port", "3200"],
+      "port": 3200
+    },
+    {
+      "name": "pf2k26-prod",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["start", "--port", "3100"],
+      "port": 3100
     }
   ]
 }

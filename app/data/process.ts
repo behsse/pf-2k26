@@ -4,7 +4,7 @@
 export const PROCESS_STEPS = [
   {
     title: "Comprendre",
-    body: "Tout commence par des questions. Ton activité, tes clients, ce qui bloque aujourd'hui. On cadre le vrai problème avant de dessiner quoi que ce soit — c'est là que se joue l'essentiel du résultat.",
+    body: "Tout commence par des questions. Ton activité, tes clients, ce qui bloque aujourd'hui. On cadre le vrai problème avant de dessiner quoi que ce soit, et c'est là que se joue l'essentiel du résultat.",
   },
   {
     title: "Concevoir & Développer",
@@ -12,6 +12,6 @@ export const PROCESS_STEPS = [
   },
   {
     title: "Affiner & Faire évoluer",
-    body: "La mise en ligne n'est pas la fin. On mesure, on ajuste, on fait grandir le projet au rythme de ton activité — un site qui reste utile est un site qui bouge.",
+    body: "La mise en ligne n'est pas la fin. On mesure, on ajuste, on fait grandir le projet au rythme de ton activité. Un site qui reste utile est un site qui bouge.",
   },
 ]

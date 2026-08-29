@@ -99,7 +99,7 @@ export const PROJECTS: Project[] = [
     title: "Red Bull",
     tagline: "Une landing page concept pour trois éditions d'une canette.",
     summary:
-      "Un concept fan-made monté comme démonstration technique : une page produit qui présente trois éditions d'une même canette — Original, Sea Blue, White — et les fait défiler l'une après l'autre. Chaque canette est un modèle 3D texturé, monté dans la page pour pouvoir être tourné et éclairé au lieu d'être photographié. Le travail porte ensuite sur le rythme du scroll, les transitions entre éditions et la mise en scène du produit, avec la contrainte d'une page unique qui doit tenir sans jamais casser la lecture. Le site n'est ni affilié ni sponsorisé par Red Bull GmbH : les marques et les emballages restent la propriété de leurs détenteurs.",
+      "Un concept fan-made monté comme démonstration technique : une page produit qui présente trois éditions d'une même canette (Original, Sea Blue, White) et les fait défiler l'une après l'autre. Chaque canette est un modèle 3D texturé, monté dans la page pour pouvoir être tourné et éclairé au lieu d'être photographié. Le travail porte ensuite sur le rythme du scroll, les transitions entre éditions et la mise en scène du produit, avec la contrainte d'une page unique qui doit tenir sans jamais casser la lecture. Le site n'est ni affilié ni sponsorisé par Red Bull GmbH : les marques et les emballages restent la propriété de leurs détenteurs.",
     services: [
       "Direction artistique",
       "Modélisation 3D",
@@ -140,6 +140,42 @@ export const PROJECTS: Project[] = [
     ],
   },
   {
+    slug: "schemify",
+    title: "Schemify",
+    tagline: "Un schéma Prisma collé, deux diagrammes de base de données en retour.",
+    summary:
+      "Schemify lit un schéma Prisma et en tire les deux vues attendues d'une base de données : le MLD, avec les types, les clés primaires, les clés étrangères et les contraintes d'unicité, et le MCD, ramené aux entités et aux relations. Coller le schéma, générer, exporter le diagramme : il n'y a rien d'autre à apprendre. L'analyse tourne entièrement dans le navigateur : le schéma n'est envoyé nulle part, ne transite par aucun serveur et n'est jamais stocké, ce qui rend l'outil utilisable sur un projet client sans avoir à se poser la question. Le reste du travail a porté sur le placement automatique des tables et le tracé des liens, pour qu'un schéma d'une dizaine de modèles reste lisible sans être réarrangé à la main.",
+    services: [
+      "Conception produit",
+      "Développement front-end",
+      "Génération de diagrammes",
+    ],
+    specs: [
+      { label: "Année", value: "2025" },
+      { label: "Rôle", value: "Design et développement" },
+      { label: "Stack", value: "Next.js · React · TypeScript · Tailwind CSS" },
+      { label: "Client", value: "Projet personnel" },
+      { label: "Type", value: "Outil web" },
+    ],
+    externalUrl: "https://schemify.behsse.com",
+    externalLabel: "Voir l'outil",
+    hero: {
+      file: "cover.webp",
+      alt: "Le site schemify.behsse.com dans un navigateur : le schéma Prisma collé à gauche, la zone de génération à droite",
+    },
+    bannerMeta: ["2025", "Outil web"],
+    media: [
+      {
+        file: "01-mld.webp",
+        alt: "L'onglet MLD : les tables Post, Category, Profile et User avec leurs types, clés primaires, clés étrangères et cardinalités",
+      },
+      {
+        file: "02-mcd.webp",
+        alt: "L'onglet MCD : les mêmes entités réduites à leurs attributs et reliées par leurs cardinalités",
+      },
+    ],
+  },
+  {
     // DRAFT — everything below the slug is written from the two images and the
     // project's name alone. I know nothing about this work: the description,
     // the year, the role, the format and the alt texts are all guesses, and the
@@ -148,7 +184,7 @@ export const PROJECTS: Project[] = [
     title: "Print Canicule",
     tagline: "Une série imprimée sur la chaleur qui s'installe.",
     summary:
-      "Un travail d'édition sur la canicule : la même donnée, la température, traitée comme une matière graphique plutôt que comme un graphique. Le format imprimé impose ses contraintes — pas d'animation, pas de survol, pas de défilement — et c'est ce qui rend l'exercice intéressant : tout doit tenir dans la composition, la typographie et le rapport à la page.",
+      "Un travail d'édition sur la canicule : la même donnée, la température, traitée comme une matière graphique plutôt que comme un graphique. Le format imprimé impose ses contraintes (pas d'animation, pas de survol, pas de défilement) et c'est ce qui rend l'exercice intéressant : tout doit tenir dans la composition, la typographie et le rapport à la page.",
     services: ["Direction artistique", "Design graphique", "Mise en page"],
     specs: [
       { label: "Année", value: "2026" },
@@ -168,6 +204,62 @@ export const PROJECTS: Project[] = [
       { file: "05-canicule-drapeau.webp", alt: "Gros plan sur le rideau du Print Canicule" },
       { file: "06-canicule-lanterne.webp", alt: "Gros plan sur les lanternes japonaise du Print Canicule" },
       { file: "07-canicule-plante.webp", alt: "Gros plan sur les plantes du Print Canicule" }
+    ],
+  },
+  {
+    // DRAFT — écrit à partir des visuels seuls. L'année, le rôle, le format
+    // d'impression et le contexte sont des suppositions : à corriger en premier.
+    slug: "print-japan-breakfeast",
+    title: "Print Japan Breakfeast",
+    tagline: "Une affiche illustrée autour d'une table japonaise.",
+    summary:
+      "Une affiche qui met un repas japonais entier dans un seul cadre : sushi, brochettes de bœuf et de shiitake, un bol de nouilles à l'œuf mollet, une soupe à la crevette, des onigiri sur leur planche et une paire de baguettes posée en travers. Le titre, おいしい食事を, court verticalement dans une bande à gauche, comme sur une enseigne de devanture. Le trait est épais et fermé, la palette tenue à quelques rouges brique et roses poudrés, et les aplats sont travaillés en trames de points et en grain de papier, un rendu sérigraphie qui donne à l'illustration sa matière une fois imprimée. Tout se joue dans la composition : les plats s'empilent en diagonale du haut vers le bas sans jamais se chevaucher au point de devenir illisibles.",
+    services: ["Direction artistique", "Illustration", "Design graphique"],
+    specs: [
+      { label: "Année", value: "2023" },
+      { label: "Rôle", value: "Direction artistique et illustration" },
+      { label: "Client", value: "Projet personnel" },
+      { label: "Type", value: "Édition imprimée" },
+      { label: "Format", value: "Affiche" },
+    ],
+    hero: {
+      file: "cover.webp",
+      alt: "L'affiche encadrée au mur d'un salon, au-dessus d'un canapé en cuir",
+    },
+    bannerMeta: ["2023", "Édition imprimée"],
+    media: [
+      {
+        file: "1-jb.webp",
+        alt: "Détail du sushi saumon et de la crevette, posés sur leur planche",
+      },
+      {
+        file: "2-jb.webp",
+        alt: "Détail de l'onigiri à la prune et de sa feuille d'érable, en haut à droite de l'affiche",
+      },
+      {
+        file: "3-jb.webp",
+        alt: "Détail de l'assiette de brochettes de bœuf et de shiitake, avec son quartier de citron vert",
+      },
+      {
+        file: "4-jb.webp",
+        alt: "Détail du bol de nouilles : œuf mollet, viande et pousses vertes dans un bouillon sombre",
+      },
+      {
+        file: "5-jb.webp",
+        alt: "Détail du bol de soupe claire à la crevette",
+      },
+      {
+        file: "6-jb.webp",
+        alt: "Détail des onigiri à l'algue nori alignés sur leur planche jaune",
+      },
+      {
+        file: "7-jb.webp",
+        alt: "Détail du coin inférieur droit : la paire de baguettes rouges sur le fond rose",
+      },
+      {
+        file: "8-jb.webp",
+        alt: "L'affiche encadrée posée au sol contre un mur blanc",
+      },
     ],
   },
 ]

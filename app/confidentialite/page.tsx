@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 import { LegalPage } from "../components/LegalPage";
 
 export const metadata: Metadata = {
-  title: "Politique de confidentialité — Behsse",
+  title: "Politique de confidentialité",
   description:
     "Comment les données transmises via le site Behsse sont collectées, utilisées et conservées.",
-  robots: { index: false },
+  alternates: { canonical: "/confidentialite" },
+  robots: { index: false, follow: true },
 };
 
 export default function ConfidentialitePage() {

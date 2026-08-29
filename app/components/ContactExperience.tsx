@@ -324,7 +324,7 @@ export function ContactExperience() {
     } catch {
       // Clipboard access can be refused outright (insecure context, permission
       // policy). Falling back to the address in plain sight beats a dead button.
-      setFailureMessage(`Copie impossible — l'adresse est ${EMAIL}`)
+      setFailureMessage(`Copie impossible, l'adresse est ${EMAIL}`)
       setStatus("failed")
     }
   }, [])
@@ -668,7 +668,7 @@ function Recap({
       </dl>
 
       <p className="mt-6 text-xs leading-relaxed text-black/35">
-        Ces informations me servent uniquement à te répondre —{" "}
+        Ces informations me servent uniquement à te répondre. Voir la{" "}
         <TransitionLink href="/confidentialite" label="Confidentialité" className="underline">
           politique de confidentialité
         </TransitionLink>

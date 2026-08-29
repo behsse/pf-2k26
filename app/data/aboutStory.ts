@@ -35,7 +35,7 @@ export const ABOUT_STORY: StorySegment[][] = [
     {
       type: "text",
       value:
-        "J'ai appris seul. Pas d'école de design, pas de cursus tout tracé — de la pratique, des projets ratés,",
+        "J'ai appris seul. Pas d'école de design, pas de cursus tout tracé : de la pratique, des projets ratés,",
     },
     { type: "image", src: worksImage, alt: "Projet en cours de conception" },
     {

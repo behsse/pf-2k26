@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import { LegalPage } from "../components/LegalPage";
 
 export const metadata: Metadata = {
-  title: "Conditions d'utilisation — Behsse",
+  title: "Conditions d'utilisation",
   description: "Conditions d'utilisation du site Behsse.",
-  robots: { index: false },
+  alternates: { canonical: "/conditions-utilisation" },
+  robots: { index: false, follow: true },
 };
 
 export default function ConditionsUtilisationPage() {
@@ -15,7 +16,7 @@ export default function ConditionsUtilisationPage() {
         consultable librement, à titre informatif.
       </p>
       <p>
-        L&apos;ensemble des contenus — textes, visuels, code et identité — est
+        L&apos;ensemble des contenus (textes, visuels, code et identité) est
         protégé par le droit d&apos;auteur. Toute reproduction ou réutilisation
         sans accord écrit préalable est interdite.
       </p>

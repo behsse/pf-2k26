@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import { LegalPage } from "../components/LegalPage";
 
 export const metadata: Metadata = {
-  title: "Mentions légales — Behsse",
+  title: "Mentions légales",
   description: "Mentions légales du site Behsse, designer et développeur web freelance.",
-  robots: { index: false },
+  alternates: { canonical: "/mentions-legales" },
+  robots: { index: false, follow: true },
 };
 
 export default function MentionsLegalesPage() {
@@ -16,7 +17,7 @@ export default function MentionsLegalesPage() {
       </p>
       <p>
         Statut juridique, numéro SIREN, adresse du siège et nom de l&apos;hébergeur
-        restent à compléter — ce sont des mentions obligatoires.
+        restent à compléter, ce sont des mentions obligatoires.
       </p>
     </LegalPage>
   );

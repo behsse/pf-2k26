@@ -87,7 +87,7 @@ export function validateStep(step: ContactStep, answers: ContactAnswers): string
   const value = readText(answers, step.id)
   if (value === "") return step.optional ? null : "Il me faut une réponse pour continuer."
   if (value.length > MAX_LENGTHS[step.kind]) {
-    return `C'est un peu long — ${MAX_LENGTHS[step.kind]} caractères maximum.`
+    return `C'est un peu long : ${MAX_LENGTHS[step.kind]} caractères maximum.`
   }
   if (step.kind === "email" && !EMAIL_PATTERN.test(value)) return "Cette adresse a l'air incomplète."
   if (step.kind === "tel" && !TEL_PATTERN.test(value)) return "Ce numéro a l'air incomplet."
@@ -184,6 +184,11 @@ export type DescribedAnswer = {
 /** Flattens the answers into readable label/value pairs, resolving option
  * values back to their labels. Shared by the recap screen and the email so the
  * visitor reads exactly what lands in the inbox. */
+/** What a skipped or empty answer reads as, in the recap on screen and in the
+ * email. Spelled out rather than punctuated, so a line that was left blank is
+ * unambiguous in a plain-text inbox. */
+const EMPTY_ANSWER = "Non renseigné"
+
 export function describeAnswers(branch: ContactBranch, answers: ContactAnswers): DescribedAnswer[] {
   const lines: DescribedAnswer[] = []
 
@@ -192,7 +197,7 @@ export function describeAnswers(branch: ContactBranch, answers: ContactAnswers):
       for (const group of step.groups) {
         const chosen = readText(answers, group.id)
         const option = group.options.find((entry) => entry.value === chosen)
-        lines.push({ stepIndex, label: group.label, value: option?.label ?? "—" })
+        lines.push({ stepIndex, label: group.label, value: option?.label ?? EMPTY_ANSWER })
       }
       return
     }
@@ -202,11 +207,11 @@ export function describeAnswers(branch: ContactBranch, answers: ContactAnswers):
       const labels = chosen
         .map((value) => step.options.find((option) => option.value === value)?.label)
         .filter((label): label is string => Boolean(label))
-      lines.push({ stepIndex, label: step.recapLabel, value: labels.join(", ") || "—" })
+      lines.push({ stepIndex, label: step.recapLabel, value: labels.join(", ") || EMPTY_ANSWER })
       return
     }
 
-    lines.push({ stepIndex, label: step.recapLabel, value: readText(answers, step.id) || "—" })
+    lines.push({ stepIndex, label: step.recapLabel, value: readText(answers, step.id) || EMPTY_ANSWER })
   })
 
   return lines

@@ -157,7 +157,7 @@ export const Navbar = () => {
             href="/"
             label="Home"
             className="block w-7 text-current md:w-9"
-            aria-label="Behsse — Accueil"
+            aria-label="Behsse, accueil"
           >
             <LogoMark className="block h-auto w-full" />
           </TransitionLink>

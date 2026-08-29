@@ -97,6 +97,14 @@ export function ProjectFloatField() {
       return free[Math.floor(Math.random() * free.length)]
     }
 
+    // Filled once the convergence tweens exist, further down. The roaming
+    // trigger below closes over the array rather than the tweens themselves, so
+    // it can invalidate them even though it is created first — and it MUST be
+    // created first, since ScrollTrigger fires callbacks for an identical start
+    // in creation order, and the invalidation has to land before the scrub
+    // moves anything.
+    const convergences: gsap.core.Tween[] = []
+
     const context = gsap.context(() => {
       items.forEach((item, index) => {
         const inner = item.firstElementChild as HTMLElement | null
@@ -151,6 +159,12 @@ export function ProjectFloatField() {
             .timeline({ onComplete: step })
             .to(inner, { opacity: 0, duration: FADE_OUT, ease: "power2.in" })
             .add(() => {
+              // Checked again here, not just at the top of `step`: the guard up
+              // there only stops the NEXT cycle from starting. A timeline
+              // already mid-fade when the scroll begins would still run this
+              // callback and move the thumbnail out from under the convergence.
+              if (!roaming) return
+
               // Relocating happens while fully hidden, so the jump is never
               // seen — only the arrival somewhere new.
               const next = takeFreeSlot(currentSlot[index])
@@ -177,6 +191,13 @@ export function ProjectFloatField() {
         // out of its converging path.
         onEnter: () => {
           roaming = false
+          // The convergence tweens recorded their starting left/top when they
+          // were BUILT, on page load. Every relocation since then was written
+          // with gsap.set behind their backs, so scrubbing from those stale
+          // values yanks the thumbnail back to the slot it held at setup before
+          // it starts descending. Invalidating here drops the recorded values,
+          // and the tween re-reads the position the thumbnail is actually in.
+          convergences.forEach((tween) => tween.invalidate())
         },
         onLeaveBack: () => {
           roaming = true
@@ -191,20 +212,22 @@ export function ProjectFloatField() {
       })
 
       items.forEach((item) => {
-        gsap.to(item, {
-          left: "50%",
-          top: "92%",
-          scale: 0.35,
-          opacity: 0,
-          ease: "power2.in",
-          scrollTrigger: {
-            trigger,
-            start: "top top",
-            end: "+=70%",
-            scrub: 0.6,
-            invalidateOnRefresh: true,
-          },
-        })
+        convergences.push(
+          gsap.to(item, {
+            left: "50%",
+            top: "92%",
+            scale: 0.35,
+            opacity: 0,
+            ease: "power2.in",
+            scrollTrigger: {
+              trigger,
+              start: "top top",
+              end: "+=70%",
+              scrub: 0.6,
+              invalidateOnRefresh: true,
+            },
+          }),
+        )
       })
     }, root)
 

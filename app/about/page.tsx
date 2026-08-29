@@ -7,13 +7,27 @@ import { HeaderColorController } from "../components/HeaderColorController";
 import { AboutStory } from "../components/AboutStory";
 import { RevealText } from "../components/RevealText";
 import { ScrollCue } from "../components/ScrollCue";
+import { pageOpenGraph } from "../lib/site";
 
 /** Title and description are what actually show in search results, so they
  * lead with the searched phrasing rather than a bare page name. */
 export const metadata: Metadata = {
-  title: "À propos — Behsse, designer et développeur web freelance",
+  title: "À propos | Designer et développeur web freelance",
   description:
-    "Designer et développeur web freelance en France. Je conçois et développe des sites sur-mesure pour des startups et des entreprises établies — de l'identité à la mise en ligne.",
+    "Sébastien, alias Behsse : designer et développeur web freelance en France, autodidacte. Je conçois et développe des sites sur-mesure pour des startups et des entreprises établies, de l'identité à la mise en ligne.",
+  keywords: [
+    "designer et développeur freelance",
+    "freelance autodidacte",
+    "création de site sur-mesure",
+    "creative developer France",
+  ],
+  alternates: { canonical: "/about" },
+  openGraph: pageOpenGraph({
+    url: "/about",
+    title: "À propos | Designer et développeur web freelance",
+    description:
+      "Sébastien, alias Behsse : designer et développeur web freelance en France. Des sites sur-mesure, de l'identité à la mise en ligne.",
+  }),
 };
 
 export default function AboutPage() {

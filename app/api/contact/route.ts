@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
     const { error } = await resend.emails.send({
       from,
       to,
-      subject: `${branch.title} — behsse.com`,
+      subject: `${branch.title} | behsse.com`,
       text: renderSubmissionText(branch, answers),
       ...(replyTo ? { replyTo } : {}),
     })

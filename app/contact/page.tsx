@@ -1,11 +1,24 @@
 import type { Metadata } from "next";
 import { ContactExperience } from "../components/ContactExperience";
 import { HeaderColorController } from "../components/HeaderColorController";
+import { pageOpenGraph } from "../lib/site";
 
 export const metadata: Metadata = {
-  title: "Contact — Behsse",
+  title: "Contact | Démarrer un projet web",
   description:
-    "Démarrer un projet, réserver un créneau téléphonique, ou récupérer mon adresse email.",
+    "Parlons de votre projet : quelques questions pour cadrer le besoin, puis un créneau téléphonique ou un email. Réponse rapide, sans engagement.",
+  keywords: [
+    "contacter un développeur web freelance",
+    "devis site internet",
+    "démarrer un projet web",
+  ],
+  alternates: { canonical: "/contact" },
+  openGraph: pageOpenGraph({
+    url: "/contact",
+    title: "Contact | Démarrer un projet web",
+    description:
+      "Quelques questions pour cadrer le besoin, puis un créneau téléphonique ou un email. Sans engagement.",
+  }),
 };
 
 /** No Footer here, deliberately.

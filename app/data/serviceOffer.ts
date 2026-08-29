@@ -33,7 +33,7 @@ export const SERVICE_OFFER: ServiceGroup[] = [
     id: "branding",
     title: "Branding",
     blurb:
-      "La partie que tout le monde voit. Identité, interfaces, mise en page — travaillées jusqu'à ce que la marque soit reconnaissable partout où elle apparaît.",
+      "La partie que tout le monde voit. Identité, interfaces et mise en page, travaillées jusqu'à ce que la marque soit reconnaissable partout où elle apparaît.",
     image: "/works.webp",
     alt: "Visuel temporaire d'un projet de branding",
     caseStudyHref: "/projets",

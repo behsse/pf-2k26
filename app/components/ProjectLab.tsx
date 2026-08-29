@@ -21,16 +21,16 @@ gsap.registerPlugin(ScrollTrigger)
  * for free: neighbours move in opposite directions, so they separate at twice
  * the rate either one travels. Still a fraction of the home grid's, which runs
  * in the hundreds. */
-const PARALLAX_DRIFTS = [-65, 40, -52, 58]
+const PARALLAX_DRIFTS = [-65, 40]
 
 /** Vertical offset per column, in pixels, so neighbouring columns never start
  * on the same line. Indexed by column, and read modulo the live column count. */
-const COLUMN_OFFSETS = [0, 112, 56, 84]
+const COLUMN_OFFSETS = [0, 112]
 
-const COLUMN_QUERIES = [
-  { query: "(min-width: 1280px)", columns: 4 },
-  { query: "(min-width: 768px)", columns: 3 },
-] as const
+/** Two columns of 16:9 cards from the tablet breakpoint up, one below it.
+ * Landscape cards do not survive being halved on a phone — at 2 columns a card
+ * is barely taller than its own caption. */
+const COLUMN_QUERIES = [{ query: "(min-width: 768px)", columns: 2 }] as const
 
 /** Deals the projects across `count` columns round-robin, so reading down the
  * columns left to right preserves the original order. */
@@ -47,7 +47,7 @@ function buildColumns<T>(items: T[], count: number): T[][] {
  * columns silently land on the wrong offsets. Reading the count explicitly
  * keeps each layout's offsets unambiguous. */
 function useColumnCount() {
-  const [columns, setColumns] = useState(2)
+  const [columns, setColumns] = useState(1)
 
   useEffect(() => {
     const lists = COLUMN_QUERIES.map((entry) => ({
@@ -56,7 +56,7 @@ function useColumnCount() {
     }))
 
     const update = () => {
-      setColumns(lists.find(({ list }) => list.matches)?.columns ?? 2)
+      setColumns(lists.find(({ list }) => list.matches)?.columns ?? 1)
     }
 
     update()
@@ -117,19 +117,21 @@ function ProjectCard({ project }: { project: PlaceholderProject }) {
       onFocus={() => animateCaption(true)}
       onBlur={() => animateCaption(false)}
     >
-      <div className="relative isolate aspect-3/4 overflow-hidden bg-white/5 rounded-md">
-        {/* `sizes` is twice the card's own width on purpose. The covers are
-          * landscape (3:2) and the card is portrait (3:4), so object-cover
-          * scales them by HEIGHT: the image is drawn twice as wide as the slot
-          * it fills, and everything but the middle is cropped away. Quoting the
-          * slot width here made Next serve a file half the resolution the
-          * browser then had to blow up — hence the pixelation. */}
+      <div className="relative isolate aspect-video overflow-hidden bg-white/5 rounded-md">
+        {/* Wider than the slot the card actually occupies (50vw at two
+          * columns): the widths Next generates are a fixed ladder, and a slot
+          * that lands just above a rung gets the file BELOW it stretched to
+          * fit. Asking for a little more picks the next rung up, and the hover
+          * zoom eats a few percent on top. */}
         <Image
           src={project.image}
           alt={project.alt}
           fill
           quality={90}
-          sizes="(max-width: 767px) 100vw, (max-width: 1279px) 66vw, 50vw"
+          sizes="(max-width: 767px) 100vw, 60vw"
+          // object-cover, never object-fill: the covers are 3:2 and the frame
+          // is 16:9, so fill would stretch them to shape. Cover keeps their
+          // proportions and crops the top and bottom instead.
           className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
         />
         <div
@@ -143,8 +145,12 @@ function ProjectCard({ project }: { project: PlaceholderProject }) {
             aria-hidden
             className="absolute inset-0 [background:linear-gradient(to_top,rgba(0,0,0,0.92)_0%,rgba(0,0,0,0.8)_22%,rgba(0,0,0,0.5)_52%,rgba(0,0,0,0.18)_78%,rgba(0,0,0,0)_100%)]"
           />
-          <div className="relative flex items-baseline justify-between gap-3 px-3 pb-3 pt-10">
-            <h2 className="text-sm uppercase tracking-[0.12em]">{project.title}</h2>
+          {/* Same scale as the home grid now that the frame matches it: at
+              two 16:9 columns there is room for the title at full size. */}
+          <div className="relative flex items-baseline justify-between gap-4 px-4 pb-3 pt-12">
+            <h2 className="text-lg font-medium tracking-[-0.03em] md:text-xl">
+              {project.title}
+            </h2>
             <p className="text-xs uppercase tracking-[0.12em] text-white/65">
               {project.status}
             </p>
@@ -171,6 +177,39 @@ function ProjectCard({ project }: { project: PlaceholderProject }) {
 export function ProjectLab() {
   const columns = useColumnCount()
   const galleryRef = useRef<HTMLDivElement>(null)
+  const heroRef = useRef<HTMLDivElement>(null)
+  const heroTextRef = useRef<HTMLDivElement>(null)
+
+  // The hero never leaves — it is sticky, so the title stays put behind the
+  // gallery for the whole page and reads through every gap between the cards.
+  // Blurring it over the same stretch the thumbnails use to converge pushes it
+  // back into the background as the cards take over, instead of leaving two
+  // equally sharp layers competing.
+  useLayoutEffect(() => {
+    const hero = heroRef.current
+    const text = heroTextRef.current
+    if (!hero || !text) return
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
+
+    const context = gsap.context(() => {
+      gsap.to(text, {
+        filter: "blur(14px)",
+        ease: "none",
+        scrollTrigger: {
+          trigger: hero,
+          start: "top top",
+          // Same range as the float field's convergence, so the title has
+          // finished receding by the time the first cards cover it.
+          end: "+=70%",
+          scrub: 0.6,
+          invalidateOnRefresh: true,
+        },
+      })
+    }, hero)
+
+    return () => context.revert()
+  }, [])
 
   useLayoutEffect(() => {
     const gallery = galleryRef.current
@@ -215,11 +254,19 @@ export function ProjectLab() {
         * paints over this hero — its divider rule showing as a stray line
         * across the title. An explicit higher z-index is what actually keeps
         * it behind, not the opaque background alone. */}
-      <div className="sticky top-0 z-10 flex h-dvh flex-col items-center justify-center overflow-hidden bg-black px-4">
+      <div
+        ref={heroRef}
+        className="sticky top-0 z-10 flex h-dvh flex-col items-center justify-center overflow-hidden bg-black px-4"
+      >
         <ProjectFloatField />
 
-        {/* Above the drifting field, so the title stays legible over it. */}
-        <div className="relative z-10 flex flex-col items-center">
+        {/* Above the drifting field, so the title stays legible over it.
+          * `will-change` is declared because the blur below is animated: without
+          * it the browser re-rasterises the text at every scrub step. */}
+        <div
+          ref={heroTextRef}
+          className="relative z-10 flex flex-col items-center [will-change:filter]"
+        >
           <h1
             id="projects-title"
             className="text-center text-4xl font-semibold leading-[1.05] tracking-[-0.03em] md:text-6xl"

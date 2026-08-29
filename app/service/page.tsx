@@ -6,11 +6,29 @@ import { RevealText } from "../components/RevealText";
 import { ScrollCue } from "../components/ScrollCue";
 import { ServiceShowcase } from "../components/ServiceShowcase";
 import { TransitionLink } from "../components/TransitionLink";
+import { pageOpenGraph } from "../lib/site";
 
 export const metadata: Metadata = {
-  title: "Services — Design et développement web freelance",
+  // Kept under 50 characters so the template's " | Behsse" still fits inside
+  // the ~60 a result shows before it truncates.
+  title: "Services | Création de site web sur-mesure",
   description:
-    "Stratégie, design et développement web sur-mesure. La méthode de travail et les prestations de Behsse, designer et développeur web freelance en France.",
+    "Branding, design d'interface et développement Next.js. Prestations, méthode de travail en trois étapes et livrables détaillés : ce que je fais et comment on avance ensemble.",
+  keywords: [
+    "création de site internet",
+    "site vitrine sur-mesure",
+    "refonte de site web",
+    "identité visuelle et logo",
+    "design d'interface UX UI",
+    "développement Next.js freelance",
+  ],
+  alternates: { canonical: "/service" },
+  openGraph: pageOpenGraph({
+    url: "/service",
+    title: "Services | Création de site web sur-mesure",
+    description:
+      "Branding, design d'interface et développement Next.js. Les prestations et la méthode de travail de Behsse.",
+  }),
 };
 
 export default function ServicePage() {

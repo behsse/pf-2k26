@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
 import { Navbar } from "./components/Navbar";
@@ -12,11 +12,6 @@ import { SITE_JSON_LD, SITE_URL } from "./lib/site";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
   subsets: ["latin"],
 });
 
@@ -104,7 +99,7 @@ export default function RootLayout({
     // fr-FR, not fr: the site is written for a French audience and the region
     // is what tells Google which country's results this belongs in.
     <html
-      lang="fr-FR" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
+      lang="fr-FR" className={`${geistSans.variable} h-full antialiased`}>
       <body className="flex min-h-dvh flex-col">
         {/* Site-wide structured data. Declared once in the layout so every page
           * carries the identity of the studio behind it; pages that describe

@@ -6,7 +6,15 @@ import { LogoMark } from "./LogoMark"
 import { markSiteReady } from "./siteReady"
 import { getLenis } from "./lenisRegistry"
 
-const LOAD_DURATION = 2
+/** Seconds the counter takes to reach 100%.
+ *
+ * The whole curtain (this, plus the pause and the slide below) is dead time in
+ * front of the page: nothing is painted behind it, so it lands directly on FCP,
+ * LCP and Speed Index. At 2s the page measured 2.9s to first paint on a
+ * throttled phone and the LARGEST element Lighthouse could find was the cookie
+ * banner, everything else still being hidden. Shortened rather than removed:
+ * the gesture still reads, it just stops costing three seconds. */
+const LOAD_DURATION = 0.8
 
 export function Loader() {
   const [isDone, setIsDone] = useState(false)
@@ -43,9 +51,9 @@ export function Loader() {
     const progress = { value: 0 }
     const timeline = gsap.timeline({
       onComplete: () => {
-        const SLIDE_DURATION = 0.9
+        const SLIDE_DURATION = 0.5
         const reveal = gsap.timeline({
-          delay: 0.15,
+          delay: 0.05,
           onStart: () => {
             loader.style.pointerEvents = "none"
           },
@@ -61,10 +69,11 @@ export function Loader() {
           ease: "power4.inOut",
         })
         // Header's own reveal needs a moment of lead time to be mid-motion
-        // (not just starting) once the curtain actually clears — firing
-        // this at the very end left a beat of blank page; firing it at the
-        // very start raced the header's animation to finish while still
-        // hidden behind the loader, making it invisible either way.
+        // (not just starting) once the curtain actually clears. Firing this at
+        // the very end left a beat of blank page; firing it at the very start
+        // raced the header's animation to finish while still hidden behind the
+        // loader, making it invisible either way. The fraction is what matters,
+        // so it survives the shortened durations unchanged.
         reveal.call(markSiteReady, undefined, SLIDE_DURATION * 0.35)
       },
     })

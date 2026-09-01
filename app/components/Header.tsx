@@ -1,7 +1,9 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
-import { FluidTextReveal } from "./fluidTextReveal"
+// Type-only: the module itself pulls in three.js, and it is loaded from inside
+// the effect below so those ~130 kB never sit on the page's critical path.
+import type { FluidTextReveal } from "./fluidTextReveal"
 import { registerHeroFluidEngine, unregisterHeroFluidEngine } from "./heroFluidRegistry"
 import { measureFontAscent } from "./textBake"
 import { RevealText } from "./RevealText"
@@ -138,52 +140,74 @@ const Header = () => {
     const container = containerRef.current
     if (!canvas || !container) return
 
-    const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)")
-    if (reducedMotionQuery.matches) return
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
 
-    let engine: FluidTextReveal | null = null
-    try {
-      engine = new FluidTextReveal(canvas, {
-        drawReveal: (ctx, width, height) => {
-          ctx.fillStyle = REVEAL_BG
-          ctx.fillRect(0, 0, width, height)
-        },
-      })
-    } catch {
-      engine = null
-    }
+    // The reveal is painted by the cursor: it only ever shows anything on a
+    // device that HAS a cursor. On a phone it produced nothing while running a
+    // full fluid simulation every frame, which was the single most expensive
+    // thing on the page and the main reason mobile stalled for 20 seconds.
+    // Without a fine pointer the text simply renders as text.
+    if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return
 
-    if (!engine) return
-    const activeEngine = engine
-    registerHeroFluidEngine(activeEngine, canvas)
+    // Cleanup can run before the dynamic import resolves. The flag is what
+    // stops a hero that has already unmounted from starting a WebGL loop that
+    // nothing would ever dispose of.
+    let cancelled = false
+    let teardown: (() => void) | null = null
 
-    const resize = () => {
-      const bounds = container.getBoundingClientRect()
-      activeEngine.resize(bounds.width, bounds.height)
-    }
+    void (async () => {
+      const { FluidTextReveal } = await import("./fluidTextReveal")
+      if (cancelled) return
 
-    const onPointerMove = (event: PointerEvent) => {
-      // The nav sits on top of the hero with a transparent background, so
-      // any dye splatted while the cursor is over it would bleed straight
-      // through the nav's empty gaps (unmasked, since only NavFluidMask's
-      // own drawn shapes get the proper reveal clipping) — never register
-      // it there in the first place.
-      if ((event.target as Element | null)?.closest("[data-site-header]")) return
-      activeEngine.updatePointer(event.clientX, event.clientY)
-    }
+      let engine: FluidTextReveal | null = null
+      try {
+        engine = new FluidTextReveal(canvas, {
+          drawReveal: (ctx, width, height) => {
+            ctx.fillStyle = REVEAL_BG
+            ctx.fillRect(0, 0, width, height)
+          },
+        })
+      } catch {
+        engine = null
+      }
 
-    const resizeObserver = new ResizeObserver(resize)
-    resizeObserver.observe(container)
-    resize()
+      if (!engine) return
+      const activeEngine = engine
+      registerHeroFluidEngine(activeEngine, canvas)
 
-    document.fonts.ready.then(resize).catch(() => {})
-    window.addEventListener("pointermove", onPointerMove)
+      const resize = () => {
+        const bounds = container.getBoundingClientRect()
+        activeEngine.resize(bounds.width, bounds.height)
+      }
+
+      const onPointerMove = (event: PointerEvent) => {
+        // The nav sits on top of the hero with a transparent background, so
+        // any dye splatted while the cursor is over it would bleed straight
+        // through the nav's empty gaps (unmasked, since only NavFluidMask's
+        // own drawn shapes get the proper reveal clipping). Never register it
+        // there in the first place.
+        if ((event.target as Element | null)?.closest("[data-site-header]")) return
+        activeEngine.updatePointer(event.clientX, event.clientY)
+      }
+
+      const resizeObserver = new ResizeObserver(resize)
+      resizeObserver.observe(container)
+      resize()
+
+      document.fonts.ready.then(resize).catch(() => {})
+      window.addEventListener("pointermove", onPointerMove)
+
+      teardown = () => {
+        resizeObserver.disconnect()
+        window.removeEventListener("pointermove", onPointerMove)
+        unregisterHeroFluidEngine(activeEngine)
+        activeEngine.dispose()
+      }
+    })()
 
     return () => {
-      resizeObserver.disconnect()
-      window.removeEventListener("pointermove", onPointerMove)
-      unregisterHeroFluidEngine(activeEngine)
-      activeEngine.dispose()
+      cancelled = true
+      teardown?.()
     }
   }, [])
 

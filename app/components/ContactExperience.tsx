@@ -536,7 +536,7 @@ function StepFields({
           }}
           className={`${FIELD_CLASS} resize-none text-left leading-relaxed`}
         />
-        <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.16em] text-black/30">
+        <p className="mt-3 text-[10px] uppercase tracking-[0.16em] text-black/30">
           Ctrl + Entrée pour continuer
         </p>
       </div>
@@ -566,7 +566,7 @@ function StepFields({
       <div className="flex w-full max-w-xl flex-col items-center gap-7">
         {step.groups.map((group) => (
           <div key={group.id} className="w-full">
-            <p className="font-mono text-[10px] uppercase tracking-[0.16em] text-black/35">
+            <p className="text-[10px] uppercase tracking-[0.16em] text-black/35">
               {group.label}
             </p>
             <div className="mt-3 flex flex-wrap justify-center gap-2">
@@ -603,7 +603,7 @@ function StepFields({
         }}
         className={`${FIELD_CLASS} text-center`}
       />
-      <p className="mt-3 font-mono text-[10px] uppercase tracking-[0.16em] text-black/30">
+      <p className="mt-3 text-[10px] uppercase tracking-[0.16em] text-black/30">
         Entrée pour continuer
       </p>
     </div>
@@ -657,7 +657,7 @@ function Recap({
             onClick={() => onEdit(line.stepIndex)}
             className="flex w-full cursor-pointer items-baseline gap-6 border-b border-black/10 py-3 text-left transition-colors hover:bg-black/[0.04] disabled:cursor-not-allowed"
           >
-            <dt className="w-32 shrink-0 font-mono text-[10px] uppercase tracking-[0.14em] text-black/35">
+            <dt className="w-32 shrink-0 text-[10px] uppercase tracking-[0.14em] text-black/35">
               {line.label}
             </dt>
             <dd className="flex-1 whitespace-pre-line text-sm leading-relaxed text-black/75">

@@ -4,14 +4,22 @@ import type { MetadataRoute } from "next"
 import { PROJECTS } from "./data/projects"
 import { absoluteUrl } from "./lib/site"
 
-/** Pages that exist but have no business being crawled. They already carry
- * `robots: { index: false }`; listing them here keeps them out of the sitemap
- * too, because submitting a URL you then ask not to index is a contradiction
- * Search Console reports as an error.
+/** Pages that exist but have no business being crawled.
  *
- * This is the ONLY list to touch when a page should stay out. Everything else
- * is discovered. */
-const EXCLUDED_ROUTES = new Set([
+ * Empty today, and deliberately so. The legal pages used to sit here: they are
+ * now indexable, because a real editor block, a real privacy policy and real
+ * terms are exactly the signals Google reads to decide a commercial site is run
+ * by someone identifiable and accountable.
+ *
+ * Anything added here must ALSO carry `robots: { index: false }` on its own
+ * page. Submitting a URL in the sitemap and then refusing to index it is a
+ * contradiction Search Console reports as an error. */
+const EXCLUDED_ROUTES = new Set<string>([])
+
+/** Indexed, but not competing with the pages that sell anything. Kept as a set
+ * rather than tested by prefix so a future `/mentions-legales-2024` does not
+ * quietly inherit the low priority. */
+const LEGAL_ROUTES = new Set([
   "/mentions-legales",
   "/confidentialite",
   "/conditions-utilisation",
@@ -71,8 +79,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .map((route) => ({
       url: absoluteUrl(route),
       // Ignored by Google, still read by Bing and by a few crawlers. The home
-      // page and the portfolio are what the site is for; the rest supports them.
-      priority: route === "/" ? 1 : route === "/projets" ? 0.9 : 0.8,
+      // page and the portfolio are what the site is for, the legal pages are
+      // there to be found rather than to rank, and the rest sits in between.
+      priority: LEGAL_ROUTES.has(route)
+        ? 0.3
+        : route === "/"
+          ? 1
+          : route === "/projets"
+            ? 0.9
+            : 0.8,
     }))
 
   const projectRoutes = PROJECTS.map((project) => ({

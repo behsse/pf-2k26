@@ -2,7 +2,9 @@
 
 import { useEffect, useRef } from "react"
 import type { RefObject } from "react"
-import { NavFluidOverlay } from "./navFluidOverlay"
+// Type-only. The module pulls in three.js, and it is imported dynamically
+// inside the effect so the nav never puts it on the critical path.
+import type { NavFluidOverlay } from "./navFluidOverlay"
 import { LOGO_PATHS, LOGO_VIEWBOX } from "./LogoMark"
 import { measureFontAscent } from "./textBake"
 
@@ -38,12 +40,23 @@ export function NavFluidMask({
     const nav = navRef.current
     if (!canvas || !nav) return
 
-    const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)")
-    if (reducedMotionQuery.matches) return
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return
 
-    let overlay: NavFluidOverlay | null = null
-    try {
-      overlay = new NavFluidOverlay(canvas, {
+    // Same rule as the hero: the overlay is a cursor-driven reveal, so on a
+    // touch device it burned a WebGL loop every frame to show nothing. The nav
+    // renders as plain markup there.
+    if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return
+
+    let cancelled = false
+    let teardown: (() => void) | null = null
+
+    void (async () => {
+      const { NavFluidOverlay } = await import("./navFluidOverlay")
+      if (cancelled) return
+
+      let overlay: NavFluidOverlay | null = null
+      try {
+        overlay = new NavFluidOverlay(canvas, {
         isSuspended: () => isMenuOpenRef.current,
         drawReveal: (ctx, width, height) => {
           ctx.clearRect(0, 0, width, height)
@@ -164,40 +177,46 @@ export function NavFluidMask({
           }
         },
       })
-    } catch {
-      overlay = null
-    }
+      } catch {
+        overlay = null
+      }
 
-    if (!overlay) return
-    const activeOverlay = overlay
+      if (!overlay) return
+      const activeOverlay = overlay
 
-    const resize = () => {
-      const bounds = nav.getBoundingClientRect()
-      activeOverlay.resize(bounds.width, bounds.height)
-    }
+      const resize = () => {
+        const bounds = nav.getBoundingClientRect()
+        activeOverlay.resize(bounds.width, bounds.height)
+      }
 
-    const rebakeColors = () => {
-      const bounds = nav.getBoundingClientRect()
-      activeOverlay.rebake(bounds.width, bounds.height)
-    }
+      const rebakeColors = () => {
+        const bounds = nav.getBoundingClientRect()
+        activeOverlay.rebake(bounds.width, bounds.height)
+      }
 
-    const resizeObserver = new ResizeObserver(resize)
-    resizeObserver.observe(nav)
-    for (const el of [logoRef.current, menuButtonRef.current, ctaButtonRef.current]) {
-      if (el) resizeObserver.observe(el)
-    }
-    resize()
-    requestAnimationFrame(() => requestAnimationFrame(resize))
+      const resizeObserver = new ResizeObserver(resize)
+      resizeObserver.observe(nav)
+      for (const el of [logoRef.current, menuButtonRef.current, ctaButtonRef.current]) {
+        if (el) resizeObserver.observe(el)
+      }
+      resize()
+      requestAnimationFrame(() => requestAnimationFrame(resize))
 
-    document.fonts.ready.then(resize).catch(() => {})
-    window.addEventListener("site-header-color-refresh", rebakeColors)
-    window.addEventListener("header-color-changed", rebakeColors)
+      document.fonts.ready.then(resize).catch(() => {})
+      window.addEventListener("site-header-color-refresh", rebakeColors)
+      window.addEventListener("header-color-changed", rebakeColors)
+
+      teardown = () => {
+        resizeObserver.disconnect()
+        window.removeEventListener("site-header-color-refresh", rebakeColors)
+        window.removeEventListener("header-color-changed", rebakeColors)
+        activeOverlay.dispose()
+      }
+    })()
 
     return () => {
-      resizeObserver.disconnect()
-      window.removeEventListener("site-header-color-refresh", rebakeColors)
-      window.removeEventListener("header-color-changed", rebakeColors)
-      activeOverlay.dispose()
+      cancelled = true
+      teardown?.()
     }
   }, [navRef, logoRef, menuButtonRef, menuTextRef, barRefs, ctaButtonRef, ctaTextRef])
 

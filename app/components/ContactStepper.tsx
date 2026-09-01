@@ -115,7 +115,7 @@ export function ContactStepper({
           {backLabel}
         </button>
 
-        <p className="px-2 font-mono text-xs tracking-[0.16em] text-black/40 tabular-nums">
+        <p className="px-2 text-xs tracking-[0.16em] text-black/40 tabular-nums">
           {String(Math.min(index + 1, total)).padStart(2, "0")} / {String(total).padStart(2, "0")}
         </p>
 

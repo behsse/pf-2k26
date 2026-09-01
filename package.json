@@ -8,6 +8,15 @@
     "start": "next start",
     "lint": "eslint"
   },
+  "//browserslist": "Sets how far back the compiler transpiles. Without it Next targets old browsers and ships polyfills for Array.at, Array.flat, Object.fromEntries, Object.hasOwn and String.trimStart, which PageSpeed reported as 13.7 KiB of dead weight. These floors are the first versions where all of those are native.",
+  "browserslist": [
+    "chrome >= 100",
+    "edge >= 100",
+    "firefox >= 100",
+    "safari >= 15.4",
+    "ios_saf >= 15.4",
+    "not dead"
+  ],
   "dependencies": {
     "gsap": "^3.15.0",
     "image-size": "^2.0.2",
